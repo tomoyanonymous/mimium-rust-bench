@@ -10,6 +10,10 @@ use test::Bencher;
 const SAMPLE_RATE: i32 = 48_000;
 const FRAMES_PER_ITER: usize = 1024;
 
+fn checksum_words(words: impl Iterator<Item = u64>) -> u64 {
+    words.fold(0u64, |acc, word| acc ^ black_box(word.rotate_left(7)))
+}
+
 #[bench]
 fn faust_10_sine_oscillators(b: &mut Bencher) {
     let mut dsp = mydsp::new();
@@ -22,9 +26,7 @@ fn faust_10_sine_oscillators(b: &mut Bencher) {
     b.iter(|| {
         let mut outputs = [&mut output[..]];
         dsp.compute(FRAMES_PER_ITER, &inputs, &mut outputs);
-        let checksum = output
-            .iter()
-            .fold(0u32, |acc, sample| acc ^ black_box(sample.to_bits()));
+        let checksum = checksum_words(output.iter().map(|sample| sample.to_bits() as u64));
         black_box(checksum)
     });
 }
@@ -32,18 +34,15 @@ fn faust_10_sine_oscillators(b: &mut Bencher) {
 #[bench]
 fn mimium_10_sine_oscillators(b: &mut Bencher) {
     let mut program = MimiumProgram::new();
-    let mut left = vec![0u64; FRAMES_PER_ITER];
-    let mut right = vec![0u64; FRAMES_PER_ITER];
+    let input: [f64; 0] = [];
+    let mut output = vec![0.0f64; FRAMES_PER_ITER * 2];
     b.bytes = (FRAMES_PER_ITER * 2 * std::mem::size_of::<u64>()) as u64;
 
     b.iter(|| {
-        program.dsp_frames_raw(&mut left, &mut right);
-        let checksum = left
-            .iter()
-            .zip(right.iter())
-            .fold(0u64, |acc, (&left_sample, &right_sample)| {
-                acc ^ black_box(left_sample.rotate_left(7) ^ right_sample)
-            });
+        program
+            .call_dsp_buffer(&input, &mut output, FRAMES_PER_ITER)
+            .unwrap();
+        let checksum = checksum_words(output.chunks_exact(2).map(|frame| frame[0].to_bits()));
         black_box(checksum)
     });
 }

@@ -6,7 +6,9 @@ pub type Word = u64;
 fn f64_to_word(value: f64) -> Word { value.to_bits() }
 #[inline(always)]
 fn word_to_f64(value: Word) -> f64 { f64::from_bits(value) }
+#[inline(always)]
 fn i64_to_word(value: i64) -> Word { u64::from_ne_bytes(value.to_ne_bytes()) }
+#[inline(always)]
 fn word_to_i64(value: Word) -> i64 { i64::from_ne_bytes(value.to_ne_bytes()) }
 #[inline(always)]
 fn copy_words<const N: usize>(slice: &[Word]) -> Result<[Word; N], String> {
@@ -18,6 +20,7 @@ fn copy_words<const N: usize>(slice: &[Word]) -> Result<[Word; N], String> {
 fn vec_to_words<const N: usize>(words: Vec<Word>) -> Result<[Word; N], String> {
     copy_words::<N>(&words)
 }
+#[inline(always)]
 fn truthy(value: Word) -> bool { word_to_f64(value) > 0.0 }
 const FUNCTION_HANDLE_TAG: Word = 1 << 63;
 const CLOSURE_HANDLE_TAG: Word = 1 << 62;
@@ -106,13 +109,11 @@ impl StateStorage {
         self.pos = self.pos.saturating_sub(offset);
     }
 
-    #[inline(always)]
     fn get_state(&mut self, size: usize) -> Vec<Word> {
         self.ensure(size);
         self.rawdata[self.pos..self.pos + size].to_vec()
     }
 
-    #[inline(always)]
     fn set_state(&mut self, src: &[Word], size: usize) {
         self.ensure(size);
         self.rawdata[self.pos..self.pos + size].copy_from_slice(&src[..size]);
@@ -160,7 +161,6 @@ struct MemoryStore {
 }
 
 impl MemoryStore {
-    #[inline(always)]
     fn alloc(&mut self, size: usize) -> Word {
         let slot = self.slots.len();
         self.slots.push(vec![0; size]);
@@ -177,7 +177,6 @@ impl MemoryStore {
             .ok_or_else(|| format!("invalid memory handle {}", handle))
     }
 
-    #[inline(always)]
     fn get_element(&mut self, base: Word, tuple_offset: usize) -> Result<Word, String> {
         let pointer = self.ptr(base)?.clone();
         self.ptrs.push(Pointer {
@@ -418,34 +417,32 @@ impl<H: MimiumHost> MimiumProgram<H> {
     }
 
     pub fn call_dsp(&mut self, args: &[Word]) -> Result<Vec<Word>, String> {
-        let result = self.call_function_handle(encode_function(28), args);
+        let previous_function_state = self.current_function_state;
+        self.current_function_state = Some(28);
+        let result = self.dispatch_dsp(args);
+        self.current_function_state = previous_function_state;
         let final_result = if result.is_empty() { Ok(Vec::new()) } else { self.memory.load(result[0], 2usize) };
         final_result
     }
 
-    #[inline(always)]
-    pub fn dsp_step_raw(&mut self) -> (Word, Word) {
-        let previous_function_state = self.current_function_state;
-        self.current_function_state = Some(28);
-        let result = self.dsp();
-        self.current_function_state = previous_function_state;
-        result
-    }
-
-    #[inline(always)]
-    pub fn dsp_frames_raw(&mut self, left: &mut [Word], right: &mut [Word]) {
-        assert_eq!(left.len(), right.len(), "left/right frame count must match");
-
-        let previous_function_state = self.current_function_state;
-        self.current_function_state = Some(28);
-
-        for (left_sample, right_sample) in left.iter_mut().zip(right.iter_mut()) {
-            let (next_left, next_right) = self.dsp();
-            *left_sample = next_left;
-            *right_sample = next_right;
+    pub fn call_dsp_buffer(&mut self, input: &[f64], output: &mut [f64], frames: usize) -> Result<(), String> {
+        if !input.is_empty() {
+            return Err(format!("expected 0 input samples for {} dsp frames, got {}", frames, input.len()));
         }
-
+        let expected_output_len = frames.saturating_mul(2usize);
+        if output.len() != expected_output_len {
+            return Err(format!("expected {} output samples for {} dsp frames, got {}", expected_output_len, frames, output.len()));
+        }
+        let previous_function_state = self.current_function_state;
+        self.current_function_state = Some(28);
+        for frame in 0..frames {
+            let frame_output_start = frame * 2usize;
+            let result = self.dsp();
+            output[frame_output_start + 0usize] = word_to_f64(result.0);
+            output[frame_output_start + 1usize] = word_to_f64(result.1);
+        }
         self.current_function_state = previous_function_state;
+        Ok(())
     }
 
 
@@ -454,7 +451,6 @@ impl<H: MimiumHost> MimiumProgram<H> {
         self.call_function_handle_with_memory(handle, args)
     }
 
-    #[inline(always)]
     fn get_current_statestorage(&mut self) -> &mut StateStorage {
         if let Some(&closure_handle) = self.state_storage_stack.last() {
             &mut self
@@ -877,6 +873,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         Vec::new()
     }
 
+    #[inline(always)]
     fn _mimium_global(&mut self) -> () {
         let mut reg_321 = [0u64; 0];
         return ();
@@ -902,6 +899,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn math_E(&mut self) -> Word {
         let mut reg_2 = [0u64; 1];
         let mut reg_3 = [0u64; 1];
@@ -918,6 +916,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn math_exp(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
         let mut reg_4 = [0u64; 1];
@@ -942,6 +941,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn math_log2(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
         let mut reg_9 = [0u64; 1];
@@ -967,6 +967,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn math_log10(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
         let mut reg_15 = [0u64; 1];
@@ -1062,6 +1063,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn __default_7_phase_shift(&mut self) -> Word {
         let mut reg_30 = [0u64; 1];
         let mut reg_31 = [0u64; 1];
@@ -1081,6 +1083,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn osc_lfsaw(&mut self, arg_0_value: Word, arg_1_value: Word) -> Word {
         let arg_0 = [arg_0_value];
         let arg_1 = [arg_1_value];
@@ -1111,6 +1114,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn __default_9_phase(&mut self) -> Word {
         let mut reg_40 = [0u64; 1];
         let mut reg_41 = [0u64; 1];
@@ -1130,6 +1134,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn osc_saw(&mut self, arg_0_value: Word, arg_1_value: Word) -> Word {
         let arg_0 = [arg_0_value];
         let arg_1 = [arg_1_value];
@@ -1152,6 +1157,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn __default_11_phase(&mut self) -> Word {
         let mut reg_51 = [0u64; 1];
         let mut reg_52 = [0u64; 1];
@@ -1171,6 +1177,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn osc_tri(&mut self, arg_0_value: Word, arg_1_value: Word) -> Word {
         let arg_0 = [arg_0_value];
         let arg_1 = [arg_1_value];
@@ -1313,6 +1320,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn __default_13_phase(&mut self) -> Word {
         let mut reg_58 = [0u64; 1];
         let mut reg_59 = [0u64; 1];
@@ -1332,6 +1340,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn osc_lftri(&mut self, arg_0_value: Word, arg_1_value: Word) -> Word {
         let arg_0 = [arg_0_value];
         let arg_1 = [arg_1_value];
@@ -1362,6 +1371,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn __default_15_phase(&mut self) -> Word {
         let mut reg_99 = [0u64; 1];
         let mut reg_100 = [0u64; 1];
@@ -1384,6 +1394,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn osc_rect(&mut self, arg_0_value: Word, arg_1_value: Word, arg_2_value: Word) -> Word {
         let arg_0 = [arg_0_value];
         let arg_1 = [arg_1_value];
@@ -1452,6 +1463,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn __default_17_phase(&mut self) -> Word {
         let mut reg_110 = [0u64; 1];
         let mut reg_111 = [0u64; 1];
@@ -1465,6 +1477,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn __default_17_duty(&mut self) -> Word {
         let mut reg_112 = [0u64; 1];
         let mut reg_113 = [0u64; 1];
@@ -1487,6 +1500,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn osc_lfrect(&mut self, arg_0_value: Word, arg_1_value: Word, arg_2_value: Word) -> Word {
         let arg_0 = [arg_0_value];
         let arg_1 = [arg_1_value];
@@ -1551,6 +1565,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn __default_20_phase(&mut self) -> Word {
         let mut reg_127 = [0u64; 1];
         let mut reg_128 = [0u64; 1];
@@ -1564,6 +1579,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn __default_20_duty(&mut self) -> Word {
         let mut reg_129 = [0u64; 1];
         let mut reg_130 = [0u64; 1];
@@ -1619,6 +1635,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn __default_23_phase(&mut self) -> Word {
         let mut reg_142 = [0u64; 1];
         let mut reg_143 = [0u64; 1];
@@ -1638,6 +1655,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn osc_lfsinwave(&mut self, arg_0_value: Word, arg_1_value: Word) -> Word {
         let arg_0 = [arg_0_value];
         let arg_1 = [arg_1_value];
@@ -1668,6 +1686,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn __default_25_phase(&mut self) -> Word {
         let mut reg_155 = [0u64; 1];
         let mut reg_156 = [0u64; 1];
@@ -1798,6 +1817,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn lambda_0(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
         let mut reg_181 = [0u64; 1];
@@ -1840,6 +1860,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn lambda_1(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
         let mut reg_188 = [0u64; 1];
@@ -1882,6 +1903,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn lambda_2(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
         let mut reg_195 = [0u64; 1];
@@ -1924,6 +1946,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn lambda_3(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
         let mut reg_202 = [0u64; 1];
@@ -1966,6 +1989,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn lambda_4(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
         let mut reg_209 = [0u64; 1];
@@ -2008,6 +2032,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn lambda_5(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
         let mut reg_216 = [0u64; 1];
@@ -2050,6 +2075,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn lambda_6(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
         let mut reg_223 = [0u64; 1];
@@ -2092,6 +2118,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn lambda_7(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
         let mut reg_230 = [0u64; 1];
@@ -2134,6 +2161,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn lambda_8(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
         let mut reg_237 = [0u64; 1];
@@ -2176,6 +2204,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn lambda_9(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
         let mut reg_244 = [0u64; 1];
