@@ -2,15 +2,19 @@ use std::convert::TryInto;
 
 pub type Word = u64;
 
+#[inline(always)]
 fn f64_to_word(value: f64) -> Word { value.to_bits() }
+#[inline(always)]
 fn word_to_f64(value: Word) -> f64 { f64::from_bits(value) }
 fn i64_to_word(value: i64) -> Word { u64::from_ne_bytes(value.to_ne_bytes()) }
 fn word_to_i64(value: Word) -> i64 { i64::from_ne_bytes(value.to_ne_bytes()) }
+#[inline(always)]
 fn copy_words<const N: usize>(slice: &[Word]) -> Result<[Word; N], String> {
     slice
         .try_into()
         .map_err(|_| format!("expected {} words, got {}", N, slice.len()))
 }
+#[inline(always)]
 fn vec_to_words<const N: usize>(words: Vec<Word>) -> Result<[Word; N], String> {
     copy_words::<N>(&words)
 }
@@ -102,11 +106,13 @@ impl StateStorage {
         self.pos = self.pos.saturating_sub(offset);
     }
 
+    #[inline(always)]
     fn get_state(&mut self, size: usize) -> Vec<Word> {
         self.ensure(size);
         self.rawdata[self.pos..self.pos + size].to_vec()
     }
 
+    #[inline(always)]
     fn set_state(&mut self, src: &[Word], size: usize) {
         self.ensure(size);
         self.rawdata[self.pos..self.pos + size].copy_from_slice(&src[..size]);
@@ -154,6 +160,7 @@ struct MemoryStore {
 }
 
 impl MemoryStore {
+    #[inline(always)]
     fn alloc(&mut self, size: usize) -> Word {
         let slot = self.slots.len();
         self.slots.push(vec![0; size]);
@@ -170,6 +177,7 @@ impl MemoryStore {
             .ok_or_else(|| format!("invalid memory handle {}", handle))
     }
 
+    #[inline(always)]
     fn get_element(&mut self, base: Word, tuple_offset: usize) -> Result<Word, String> {
         let pointer = self.ptr(base)?.clone();
         self.ptrs.push(Pointer {
@@ -179,6 +187,7 @@ impl MemoryStore {
         Ok(encode_memory(self.ptrs.len()))
     }
 
+    #[inline(always)]
     fn load(&self, ptr: Word, size: usize) -> Result<Vec<Word>, String> {
         let Some(index) = decode_memory(ptr).and_then(|value| value.checked_sub(1)) else {
             if size == 1 {
@@ -208,6 +217,7 @@ impl MemoryStore {
         Ok(slot[pointer.offset..end].to_vec())
     }
 
+    #[inline(always)]
     fn store(&mut self, ptr: Word, src: &[Word], size: usize) -> Result<(), String> {
         let pointer = self.ptr(ptr)?.clone();
         let slot = self
@@ -413,6 +423,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         final_result
     }
 
+    #[inline(always)]
     pub fn dsp_step_raw(&mut self) -> (Word, Word) {
         let previous_function_state = self.current_function_state;
         self.current_function_state = Some(28);
@@ -421,6 +432,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         result
     }
 
+    #[inline(always)]
     pub fn dsp_frames_raw(&mut self, left: &mut [Word], right: &mut [Word]) {
         assert_eq!(left.len(), right.len(), "left/right frame count must match");
 
@@ -437,10 +449,12 @@ impl<H: MimiumHost> MimiumProgram<H> {
     }
 
 
+
     fn call_function_handle(&mut self, handle: Word, args: &[Word]) -> Vec<Word> {
         self.call_function_handle_with_memory(handle, args)
     }
 
+    #[inline(always)]
     fn get_current_statestorage(&mut self) -> &mut StateStorage {
         if let Some(&closure_handle) = self.state_storage_stack.last() {
             &mut self
@@ -874,6 +888,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn math_PI(&mut self) -> Word {
         let mut reg_0 = [0u64; 1];
         let mut reg_1 = [0u64; 1];
@@ -977,6 +992,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn osc_phasor_zero(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
         let mut reg_21 = [0u64; 1];
@@ -1017,6 +1033,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn osc_phasor(&mut self, arg_0_value: Word, arg_1_value: Word) -> Word {
         let arg_0 = [arg_0_value];
         let arg_1 = [arg_1_value];
@@ -1566,6 +1583,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn osc_sinwave(&mut self, arg_0_value: Word, arg_1_value: Word) -> Word {
         let arg_0 = [arg_0_value];
         let arg_1 = [arg_1_value];
@@ -1666,6 +1684,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn osc(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
         let mut reg_166 = [0u64; 1];
@@ -1690,6 +1709,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         vec![result_handle]
     }
 
+    #[inline(always)]
     fn dsp(&mut self) -> (Word, Word) {
         let mut reg_171 = [0u64; 1];
         let mut reg_172 = [0u64; 1];
@@ -1735,6 +1755,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         [result].to_vec()
     }
 
+    #[inline(always)]
     fn r(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
         let mut reg_174 = [0u64; 1];
