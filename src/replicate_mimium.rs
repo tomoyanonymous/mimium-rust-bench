@@ -1232,6 +1232,8 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let mut reg_96: f64 = 0.0f64;
         let mut reg_97: f64 = 0.0f64;
         let mut reg_98: Word = 0u64;
+        let mut stack_alloc_64 = [0u64; 1];
+        let mut stack_alloc_91 = [0u64; 1];
         let mut bb: usize = 0;
         let mut pred_bb: usize = 0;
         loop {
@@ -1243,8 +1245,8 @@ impl<H: MimiumHost> MimiumProgram<H> {
                     let call_result = self.osc_phasor(f64_to_word(reg_60), f64_to_word(reg_61));
                     reg_63 = word_to_f64(call_result);
                     reg_64 = self.memory.alloc(1usize);
-                    self.memory.store(reg_64, &[f64_to_word(reg_63)], 1usize).unwrap();
-                    reg_66 = word_to_f64(self.memory.load(reg_64, 1usize).unwrap()[0]);
+                    stack_alloc_64[0usize] = f64_to_word(reg_63);
+                    reg_66 = word_to_f64(stack_alloc_64[0usize]);
                     reg_67 = 0.25f64;
                     reg_68 = if reg_66 < reg_67 { 1.0 } else { 0.0 };
                     pred_bb = 0;
@@ -1252,7 +1254,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
                     continue;
                 },
                 1 => {
-                    reg_70 = word_to_f64(self.memory.load(reg_64, 1usize).unwrap()[0]);
+                    reg_70 = word_to_f64(stack_alloc_64[0usize]);
                     reg_71 = 0.0f64;
                     reg_72 = 1.0f64;
                     reg_73 = reg_71 - reg_72;
@@ -1264,7 +1266,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
                     continue;
                 },
                 2 => {
-                    reg_77 = word_to_f64(self.memory.load(reg_64, 1usize).unwrap()[0]);
+                    reg_77 = word_to_f64(stack_alloc_64[0usize]);
                     reg_78 = 0.75f64;
                     reg_79 = if reg_77 > reg_78 { 1.0 } else { 0.0 };
                     pred_bb = 2;
@@ -1275,7 +1277,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
                     continue;
                 },
                 3 => {
-                    reg_81 = word_to_f64(self.memory.load(reg_64, 1usize).unwrap()[0]);
+                    reg_81 = word_to_f64(stack_alloc_64[0usize]);
                     reg_82 = 0.0f64;
                     reg_83 = 1.0f64;
                     reg_84 = reg_82 - reg_83;
@@ -1287,7 +1289,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
                     continue;
                 },
                 4 => {
-                    reg_88 = word_to_f64(self.memory.load(reg_64, 1usize).unwrap()[0]);
+                    reg_88 = word_to_f64(stack_alloc_64[0usize]);
                     pred_bb = 4;
                     bb = 5usize;
                     continue;
@@ -1313,8 +1315,8 @@ impl<H: MimiumHost> MimiumProgram<H> {
                         panic!("{}", format!("phi predecessor mismatch in block 6: {}", pred_bb));
                     }
                     reg_91 = self.memory.alloc(1usize);
-                    self.memory.store(reg_91, &[f64_to_word(reg_90)], 1usize).unwrap();
-                    reg_93 = word_to_f64(self.memory.load(reg_91, 1usize).unwrap()[0]);
+                    stack_alloc_91[0usize] = f64_to_word(reg_90);
+                    reg_93 = word_to_f64(stack_alloc_91[0usize]);
                     reg_94 = 0.5f64;
                     reg_95 = reg_93 - reg_94;
                     reg_96 = 4.0f64;
@@ -1771,20 +1773,22 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let mut reg_318: Word = 0u64;
         let mut reg_319: Word = 0u64;
         let mut reg_320: Word = 0u64;
+        let mut stack_alloc_172 = [0u64; 1];
+        let mut stack_alloc_311 = [0u64; 1];
         reg_171 = 50.0f64;
         reg_172 = self.memory.alloc(1usize);
-        self.memory.store(reg_172, &[f64_to_word(reg_171)], 1usize).unwrap();
-        reg_308 = word_to_f64(self.memory.load(reg_172, 1usize).unwrap()[0]);
+        stack_alloc_172[0usize] = f64_to_word(reg_171);
+        reg_308 = word_to_f64(stack_alloc_172[0usize]);
         reg_309 = 29u64;
         let call_result = self.r(f64_to_word(reg_308));
         reg_310 = word_to_f64(call_result);
         reg_311 = self.memory.alloc(1usize);
-        self.memory.store(reg_311, &[f64_to_word(reg_310)], 1usize).unwrap();
+        stack_alloc_311[0usize] = f64_to_word(reg_310);
         reg_313 = self.memory.alloc(2usize);
-        reg_314 = word_to_f64(self.memory.load(reg_311, 1usize).unwrap()[0]);
+        reg_314 = word_to_f64(stack_alloc_311[0usize]);
         reg_315 = self.memory.get_element(reg_313, 0usize).unwrap();
         self.memory.store(reg_315, &[f64_to_word(reg_314)], 1usize).unwrap();
-        reg_317 = word_to_f64(self.memory.load(reg_311, 1usize).unwrap()[0]);
+        reg_317 = word_to_f64(stack_alloc_311[0usize]);
         reg_318 = self.memory.get_element(reg_313, 1usize).unwrap();
         self.memory.store(reg_318, &[f64_to_word(reg_317)], 1usize).unwrap();
         return ({ let words = self.memory.load(reg_313, 2usize).unwrap(); (words[0], words[1]) });

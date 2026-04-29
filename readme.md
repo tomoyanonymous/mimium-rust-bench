@@ -1,4 +1,19 @@
 
+# Benchmark of mimium rust codegen
+
+
+to use instuments:
+
+```
+cargo install cargo-instruments
+cargo +nightly instruments --bench dsp_bench -t time --profile=dev
+```
+
+```
+cargo +nightly flamegraph --dev --bench dsp_bench
+```
+
+
 ## Initial result
 
 ```log
@@ -26,4 +41,11 @@ test mimium_10_sine_oscillators ... bench:     271,811.46 ns/iter (+/- 25,345.55
 ```log
 test faust_10_sine_oscillators  ... bench:      18,421.41 ns/iter (+/- 1,021.47) = 222 MB/s
 test mimium_10_sine_oscillators ... bench:     267,846.74 ns/iter (+/- 30,923.32) = 61 MB/s
+```
+
+## supress heap memory slot
+
+```log
+test faust_10_sine_oscillators  ... bench:      18,775.07 ns/iter (+/- 1,060.44) = 218 MB/s
+test mimium_10_sine_oscillators ... bench:     130,797.50 ns/iter (+/- 21,112.80) = 125 MB/s
 ```
