@@ -414,7 +414,11 @@ impl<H: MimiumHost> MimiumProgram<H> {
     }
 
     pub fn dsp_step_raw(&mut self) -> (Word, Word) {
-        self.dsp()
+        let previous_function_state = self.current_function_state;
+        self.current_function_state = Some(28);
+        let result = self.dsp();
+        self.current_function_state = previous_function_state;
+        result
     }
 
 
