@@ -63,3 +63,22 @@ test mimium_10_sine_oscillators ... bench:      56,683.68 ns/iter (+/- 13,491.20
 test faust_10_sine_oscillators  ... bench:      18,530.96 ns/iter (+/- 936.06) = 221 MB/s
 test mimium_10_sine_oscillators ... bench:      50,977.52 ns/iter (+/- 1,494.50) = 321 MB/s
 ```
+
+## Pure Data comparison via libpd-sys
+
+Added `libpd_10_sine_oscillators` benchmark using [libpd-sys](https://crates.io/crates/libpd-sys).
+The Pure Data patch (`src/replicate.pd`) uses 10 `osc~` objects at 50–500 Hz (in 50 Hz steps)
+with amplitude scaling 1/n, summed to a single output channel.
+
+> **Note on algorithm**: PD's `osc~` is a cosine wavetable oscillator (512-entry table),
+> whereas Faust and mimium compute `sin()` directly. Wavetable lookup is significantly cheaper
+> than a transcendental function call, which largely explains the speed difference below.
+
+```log
+test faust_10_sine_oscillators  ... bench:      18,541.49 ns/iter (+/- 1,171.40) = 220 MB/s
+test libpd_10_sine_oscillators  ... bench:      12,684.79 ns/iter (+/-   282.24) = 322 MB/s
+test mimium_10_sine_oscillators ... bench:      50,358.47 ns/iter (+/- 2,419.06) = 325 MB/s
+```
+
+The MB/s figures are not directly comparable: Faust and libpd measure mono f32 throughput
+(4 KB/iter), while mimium measures stereo f64 throughput (16 KB/iter).
