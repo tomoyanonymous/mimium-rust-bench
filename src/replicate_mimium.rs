@@ -438,18 +438,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
                 StateStorage::new(1),
                 StateStorage::new(0),
                 StateStorage::new(1),
-                StateStorage::new(1),
-                StateStorage::new(1),
-                StateStorage::new(1),
-                StateStorage::new(1),
-                StateStorage::new(1),
-                StateStorage::new(1),
-                StateStorage::new(1),
-                StateStorage::new(1),
-                StateStorage::new(1),
-                StateStorage::new(1),
-                StateStorage::new(1),
-                StateStorage::new(1),
+                StateStorage::new(11),
 
             ],
             current_function_state: None,
@@ -787,50 +776,6 @@ impl<H: MimiumHost> MimiumProgram<H> {
                 let result = self.dispatch_dsp(args);
                 result
             },
-            Some(29) => {
-                let result = self.dispatch_r(args);
-                result
-            },
-            Some(30) => {
-                let result = self.dispatch_lambda_0(args);
-                result
-            },
-            Some(31) => {
-                let result = self.dispatch_lambda_1(args);
-                result
-            },
-            Some(32) => {
-                let result = self.dispatch_lambda_2(args);
-                result
-            },
-            Some(33) => {
-                let result = self.dispatch_lambda_3(args);
-                result
-            },
-            Some(34) => {
-                let result = self.dispatch_lambda_4(args);
-                result
-            },
-            Some(35) => {
-                let result = self.dispatch_lambda_5(args);
-                result
-            },
-            Some(36) => {
-                let result = self.dispatch_lambda_6(args);
-                result
-            },
-            Some(37) => {
-                let result = self.dispatch_lambda_7(args);
-                result
-            },
-            Some(38) => {
-                let result = self.dispatch_lambda_8(args);
-                result
-            },
-            Some(39) => {
-                let result = self.dispatch_lambda_9(args);
-                result
-            },
 
             Some(index) => unreachable!("unknown function handle {}", index),
             None => unreachable!("unsupported callable handle {}", handle),
@@ -971,7 +916,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
 
     #[inline(always)]
     fn _mimium_global(&mut self) -> () {
-        let mut reg_321: Word = 0u64;
+        let mut reg_264: Word = 0u64;
         return ();
     }
 
@@ -1849,501 +1794,245 @@ impl<H: MimiumHost> MimiumProgram<H> {
     #[inline(always)]
     fn dsp(&mut self, ret_words: &mut [Word; 2]) -> () {
         let mut reg_171: f64 = 0.0f64;
-        let mut reg_172: Word = 0u64;
-        let mut reg_173: Word = 0u64;
-        let mut reg_308: f64 = 0.0f64;
-        let mut reg_309: Word = 0u64;
-        let mut reg_310: f64 = 0.0f64;
-        let mut reg_311: Word = 0u64;
-        let mut reg_312: Word = 0u64;
-        let mut reg_313: Word = 0u64;
-        let mut reg_314: f64 = 0.0f64;
-        let mut reg_315: Word = 0u64;
-        let mut reg_316: Word = 0u64;
-        let mut reg_317: f64 = 0.0f64;
-        let mut reg_318: Word = 0u64;
-        let mut reg_319: Word = 0u64;
-        let mut reg_320: Word = 0u64;
-        let mut stack_alloc_172 = [0u64; 1];
-        let mut stack_alloc_311 = [0u64; 1];
-        let mut stack_alloc_313 = [0u64; 2];
-        reg_171 = 50.0f64;
-        stack_alloc_172[0usize] = f64_to_word(reg_171);
-        reg_308 = word_to_f64(stack_alloc_172[0usize]);
-        reg_309 = 29u64;
-        let call_result = self.r(f64_to_word(reg_308));
-        reg_310 = word_to_f64(call_result);
-        stack_alloc_311[0usize] = f64_to_word(reg_310);
-        reg_314 = word_to_f64(stack_alloc_311[0usize]);
-        stack_alloc_313[0usize] = f64_to_word(reg_314);
-        reg_317 = word_to_f64(stack_alloc_311[0usize]);
-        stack_alloc_313[1usize] = f64_to_word(reg_317);
-        ret_words.copy_from_slice(&stack_alloc_313[0usize..2usize]);
-        return ();
-    }
-
-    fn dispatch_r(&mut self, args: &[Word]) -> Vec<Word> {
-        let mut arg_offset = 0usize;
-        let arg_0_words = copy_words::<1>(&args[arg_offset..arg_offset + 1]).unwrap();
-        arg_offset += 1;
-        let arg_0_value = arg_0_words[0];
-        let result = self.r(arg_0_value);
-        [result].to_vec()
-    }
-
-    #[inline(always)]
-    fn r(&mut self, arg_0_value: Word) -> Word {
-        let arg_0 = [arg_0_value];
-        let arg_0_scalar = word_to_f64(arg_0_value);
-        let mut reg_174: f64 = 0.0f64;
+        let mut reg_172: f64 = 0.0f64;
+        let mut reg_173: f64 = 0.0f64;
+        let mut reg_174: Word = 0u64;
         let mut reg_175: f64 = 0.0f64;
         let mut reg_176: f64 = 0.0f64;
-        let mut reg_177: Word = 0u64;
+        let mut reg_177: f64 = 0.0f64;
         let mut reg_178: f64 = 0.0f64;
         let mut reg_179: f64 = 0.0f64;
         let mut reg_180: f64 = 0.0f64;
-        let mut reg_302: Word = 0u64;
-        let mut reg_303: Word = 0u64;
-        let mut reg_304: Word = 0u64;
-        let mut reg_305: Word = 0u64;
-        let mut reg_306: f64 = 0.0f64;
-        let mut reg_307: Word = 0u64;
-        reg_174 = arg_0_scalar;
-        reg_175 = 10.0f64;
-        reg_176 = reg_174 * reg_175;
-        reg_177 = 27u64;
-        let call_result = self.osc(f64_to_word(reg_176));
-        reg_178 = word_to_f64(call_result);
-        reg_179 = 10.0f64;
-        reg_180 = reg_178 / reg_179;
-        reg_302 = 30u64;
-        let mut closure_upvalues = Vec::new();
-        let mut closure_indirect = Vec::new();
-        reg_303 = self.closures.alloc(reg_302, closure_upvalues, closure_indirect, 1usize).unwrap();
-        reg_304 = reg_303;
-        reg_305 = reg_303;
-        reg_306 = reg_180 + word_to_f64(reg_303);
-        return f64_to_word(reg_306);
-    }
-
-    fn dispatch_lambda_0(&mut self, args: &[Word]) -> Vec<Word> {
-        let mut arg_offset = 0usize;
-        let arg_0_words = copy_words::<1>(&args[arg_offset..arg_offset + 1]).unwrap();
-        arg_offset += 1;
-        let arg_0_value = arg_0_words[0];
-        let result = self.lambda_0(arg_0_value);
-        [result].to_vec()
-    }
-
-    #[inline(always)]
-    fn lambda_0(&mut self, arg_0_value: Word) -> Word {
-        let arg_0 = [arg_0_value];
-        let arg_0_scalar = word_to_f64(arg_0_value);
-        let mut reg_181: f64 = 0.0f64;
+        let mut reg_181: Word = 0u64;
         let mut reg_182: f64 = 0.0f64;
         let mut reg_183: f64 = 0.0f64;
-        let mut reg_184: Word = 0u64;
+        let mut reg_184: f64 = 0.0f64;
         let mut reg_185: f64 = 0.0f64;
         let mut reg_186: f64 = 0.0f64;
         let mut reg_187: f64 = 0.0f64;
-        let mut reg_296: Word = 0u64;
-        let mut reg_297: Word = 0u64;
-        let mut reg_298: Word = 0u64;
-        let mut reg_299: Word = 0u64;
-        let mut reg_300: f64 = 0.0f64;
-        let mut reg_301: Word = 0u64;
-        reg_181 = arg_0_scalar;
-        reg_182 = 9.0f64;
-        reg_183 = reg_181 * reg_182;
-        reg_184 = 27u64;
-        let call_result = self.osc(f64_to_word(reg_183));
-        reg_185 = word_to_f64(call_result);
-        reg_186 = 9.0f64;
-        reg_187 = reg_185 / reg_186;
-        reg_296 = 31u64;
-        let mut closure_upvalues = Vec::new();
-        let mut closure_indirect = Vec::new();
-        reg_297 = self.closures.alloc(reg_296, closure_upvalues, closure_indirect, 1usize).unwrap();
-        reg_298 = reg_297;
-        reg_299 = reg_297;
-        reg_300 = reg_187 + word_to_f64(reg_297);
-        return f64_to_word(reg_300);
-    }
-
-    fn dispatch_lambda_1(&mut self, args: &[Word]) -> Vec<Word> {
-        let mut arg_offset = 0usize;
-        let arg_0_words = copy_words::<1>(&args[arg_offset..arg_offset + 1]).unwrap();
-        arg_offset += 1;
-        let arg_0_value = arg_0_words[0];
-        let result = self.lambda_1(arg_0_value);
-        [result].to_vec()
-    }
-
-    #[inline(always)]
-    fn lambda_1(&mut self, arg_0_value: Word) -> Word {
-        let arg_0 = [arg_0_value];
-        let arg_0_scalar = word_to_f64(arg_0_value);
-        let mut reg_188: f64 = 0.0f64;
+        let mut reg_188: Word = 0u64;
         let mut reg_189: f64 = 0.0f64;
         let mut reg_190: f64 = 0.0f64;
-        let mut reg_191: Word = 0u64;
+        let mut reg_191: f64 = 0.0f64;
         let mut reg_192: f64 = 0.0f64;
         let mut reg_193: f64 = 0.0f64;
         let mut reg_194: f64 = 0.0f64;
-        let mut reg_290: Word = 0u64;
-        let mut reg_291: Word = 0u64;
-        let mut reg_292: Word = 0u64;
-        let mut reg_293: Word = 0u64;
-        let mut reg_294: f64 = 0.0f64;
-        let mut reg_295: Word = 0u64;
-        reg_188 = arg_0_scalar;
-        reg_189 = 8.0f64;
-        reg_190 = reg_188 * reg_189;
-        reg_191 = 27u64;
-        let call_result = self.osc(f64_to_word(reg_190));
-        reg_192 = word_to_f64(call_result);
-        reg_193 = 8.0f64;
-        reg_194 = reg_192 / reg_193;
-        reg_290 = 32u64;
-        let mut closure_upvalues = Vec::new();
-        let mut closure_indirect = Vec::new();
-        reg_291 = self.closures.alloc(reg_290, closure_upvalues, closure_indirect, 1usize).unwrap();
-        reg_292 = reg_291;
-        reg_293 = reg_291;
-        reg_294 = reg_194 + word_to_f64(reg_291);
-        return f64_to_word(reg_294);
-    }
-
-    fn dispatch_lambda_2(&mut self, args: &[Word]) -> Vec<Word> {
-        let mut arg_offset = 0usize;
-        let arg_0_words = copy_words::<1>(&args[arg_offset..arg_offset + 1]).unwrap();
-        arg_offset += 1;
-        let arg_0_value = arg_0_words[0];
-        let result = self.lambda_2(arg_0_value);
-        [result].to_vec()
-    }
-
-    #[inline(always)]
-    fn lambda_2(&mut self, arg_0_value: Word) -> Word {
-        let arg_0 = [arg_0_value];
-        let arg_0_scalar = word_to_f64(arg_0_value);
-        let mut reg_195: f64 = 0.0f64;
+        let mut reg_195: Word = 0u64;
         let mut reg_196: f64 = 0.0f64;
         let mut reg_197: f64 = 0.0f64;
-        let mut reg_198: Word = 0u64;
+        let mut reg_198: f64 = 0.0f64;
         let mut reg_199: f64 = 0.0f64;
         let mut reg_200: f64 = 0.0f64;
         let mut reg_201: f64 = 0.0f64;
-        let mut reg_284: Word = 0u64;
-        let mut reg_285: Word = 0u64;
-        let mut reg_286: Word = 0u64;
-        let mut reg_287: Word = 0u64;
-        let mut reg_288: f64 = 0.0f64;
-        let mut reg_289: Word = 0u64;
-        reg_195 = arg_0_scalar;
-        reg_196 = 7.0f64;
-        reg_197 = reg_195 * reg_196;
-        reg_198 = 27u64;
-        let call_result = self.osc(f64_to_word(reg_197));
-        reg_199 = word_to_f64(call_result);
-        reg_200 = 7.0f64;
-        reg_201 = reg_199 / reg_200;
-        reg_284 = 33u64;
-        let mut closure_upvalues = Vec::new();
-        let mut closure_indirect = Vec::new();
-        reg_285 = self.closures.alloc(reg_284, closure_upvalues, closure_indirect, 1usize).unwrap();
-        reg_286 = reg_285;
-        reg_287 = reg_285;
-        reg_288 = reg_201 + word_to_f64(reg_285);
-        return f64_to_word(reg_288);
-    }
-
-    fn dispatch_lambda_3(&mut self, args: &[Word]) -> Vec<Word> {
-        let mut arg_offset = 0usize;
-        let arg_0_words = copy_words::<1>(&args[arg_offset..arg_offset + 1]).unwrap();
-        arg_offset += 1;
-        let arg_0_value = arg_0_words[0];
-        let result = self.lambda_3(arg_0_value);
-        [result].to_vec()
-    }
-
-    #[inline(always)]
-    fn lambda_3(&mut self, arg_0_value: Word) -> Word {
-        let arg_0 = [arg_0_value];
-        let arg_0_scalar = word_to_f64(arg_0_value);
-        let mut reg_202: f64 = 0.0f64;
+        let mut reg_202: Word = 0u64;
         let mut reg_203: f64 = 0.0f64;
         let mut reg_204: f64 = 0.0f64;
-        let mut reg_205: Word = 0u64;
+        let mut reg_205: f64 = 0.0f64;
         let mut reg_206: f64 = 0.0f64;
         let mut reg_207: f64 = 0.0f64;
         let mut reg_208: f64 = 0.0f64;
-        let mut reg_278: Word = 0u64;
-        let mut reg_279: Word = 0u64;
-        let mut reg_280: Word = 0u64;
-        let mut reg_281: Word = 0u64;
-        let mut reg_282: f64 = 0.0f64;
-        let mut reg_283: Word = 0u64;
-        reg_202 = arg_0_scalar;
-        reg_203 = 6.0f64;
-        reg_204 = reg_202 * reg_203;
-        reg_205 = 27u64;
-        let call_result = self.osc(f64_to_word(reg_204));
-        reg_206 = word_to_f64(call_result);
-        reg_207 = 6.0f64;
-        reg_208 = reg_206 / reg_207;
-        reg_278 = 34u64;
-        let mut closure_upvalues = Vec::new();
-        let mut closure_indirect = Vec::new();
-        reg_279 = self.closures.alloc(reg_278, closure_upvalues, closure_indirect, 1usize).unwrap();
-        reg_280 = reg_279;
-        reg_281 = reg_279;
-        reg_282 = reg_208 + word_to_f64(reg_279);
-        return f64_to_word(reg_282);
-    }
-
-    fn dispatch_lambda_4(&mut self, args: &[Word]) -> Vec<Word> {
-        let mut arg_offset = 0usize;
-        let arg_0_words = copy_words::<1>(&args[arg_offset..arg_offset + 1]).unwrap();
-        arg_offset += 1;
-        let arg_0_value = arg_0_words[0];
-        let result = self.lambda_4(arg_0_value);
-        [result].to_vec()
-    }
-
-    #[inline(always)]
-    fn lambda_4(&mut self, arg_0_value: Word) -> Word {
-        let arg_0 = [arg_0_value];
-        let arg_0_scalar = word_to_f64(arg_0_value);
-        let mut reg_209: f64 = 0.0f64;
+        let mut reg_209: Word = 0u64;
         let mut reg_210: f64 = 0.0f64;
         let mut reg_211: f64 = 0.0f64;
-        let mut reg_212: Word = 0u64;
+        let mut reg_212: f64 = 0.0f64;
         let mut reg_213: f64 = 0.0f64;
         let mut reg_214: f64 = 0.0f64;
         let mut reg_215: f64 = 0.0f64;
-        let mut reg_272: Word = 0u64;
-        let mut reg_273: Word = 0u64;
-        let mut reg_274: Word = 0u64;
-        let mut reg_275: Word = 0u64;
-        let mut reg_276: f64 = 0.0f64;
-        let mut reg_277: Word = 0u64;
-        reg_209 = arg_0_scalar;
-        reg_210 = 5.0f64;
-        reg_211 = reg_209 * reg_210;
-        reg_212 = 27u64;
-        let call_result = self.osc(f64_to_word(reg_211));
-        reg_213 = word_to_f64(call_result);
-        reg_214 = 5.0f64;
-        reg_215 = reg_213 / reg_214;
-        reg_272 = 35u64;
-        let mut closure_upvalues = Vec::new();
-        let mut closure_indirect = Vec::new();
-        reg_273 = self.closures.alloc(reg_272, closure_upvalues, closure_indirect, 1usize).unwrap();
-        reg_274 = reg_273;
-        reg_275 = reg_273;
-        reg_276 = reg_215 + word_to_f64(reg_273);
-        return f64_to_word(reg_276);
-    }
-
-    fn dispatch_lambda_5(&mut self, args: &[Word]) -> Vec<Word> {
-        let mut arg_offset = 0usize;
-        let arg_0_words = copy_words::<1>(&args[arg_offset..arg_offset + 1]).unwrap();
-        arg_offset += 1;
-        let arg_0_value = arg_0_words[0];
-        let result = self.lambda_5(arg_0_value);
-        [result].to_vec()
-    }
-
-    #[inline(always)]
-    fn lambda_5(&mut self, arg_0_value: Word) -> Word {
-        let arg_0 = [arg_0_value];
-        let arg_0_scalar = word_to_f64(arg_0_value);
-        let mut reg_216: f64 = 0.0f64;
+        let mut reg_216: Word = 0u64;
         let mut reg_217: f64 = 0.0f64;
         let mut reg_218: f64 = 0.0f64;
-        let mut reg_219: Word = 0u64;
+        let mut reg_219: f64 = 0.0f64;
         let mut reg_220: f64 = 0.0f64;
         let mut reg_221: f64 = 0.0f64;
         let mut reg_222: f64 = 0.0f64;
-        let mut reg_266: Word = 0u64;
-        let mut reg_267: Word = 0u64;
-        let mut reg_268: Word = 0u64;
-        let mut reg_269: Word = 0u64;
-        let mut reg_270: f64 = 0.0f64;
-        let mut reg_271: Word = 0u64;
-        reg_216 = arg_0_scalar;
-        reg_217 = 4.0f64;
-        reg_218 = reg_216 * reg_217;
-        reg_219 = 27u64;
-        let call_result = self.osc(f64_to_word(reg_218));
-        reg_220 = word_to_f64(call_result);
-        reg_221 = 4.0f64;
-        reg_222 = reg_220 / reg_221;
-        reg_266 = 36u64;
-        let mut closure_upvalues = Vec::new();
-        let mut closure_indirect = Vec::new();
-        reg_267 = self.closures.alloc(reg_266, closure_upvalues, closure_indirect, 1usize).unwrap();
-        reg_268 = reg_267;
-        reg_269 = reg_267;
-        reg_270 = reg_222 + word_to_f64(reg_267);
-        return f64_to_word(reg_270);
-    }
-
-    fn dispatch_lambda_6(&mut self, args: &[Word]) -> Vec<Word> {
-        let mut arg_offset = 0usize;
-        let arg_0_words = copy_words::<1>(&args[arg_offset..arg_offset + 1]).unwrap();
-        arg_offset += 1;
-        let arg_0_value = arg_0_words[0];
-        let result = self.lambda_6(arg_0_value);
-        [result].to_vec()
-    }
-
-    #[inline(always)]
-    fn lambda_6(&mut self, arg_0_value: Word) -> Word {
-        let arg_0 = [arg_0_value];
-        let arg_0_scalar = word_to_f64(arg_0_value);
-        let mut reg_223: f64 = 0.0f64;
+        let mut reg_223: Word = 0u64;
         let mut reg_224: f64 = 0.0f64;
         let mut reg_225: f64 = 0.0f64;
-        let mut reg_226: Word = 0u64;
+        let mut reg_226: f64 = 0.0f64;
         let mut reg_227: f64 = 0.0f64;
         let mut reg_228: f64 = 0.0f64;
         let mut reg_229: f64 = 0.0f64;
-        let mut reg_260: Word = 0u64;
-        let mut reg_261: Word = 0u64;
-        let mut reg_262: Word = 0u64;
-        let mut reg_263: Word = 0u64;
-        let mut reg_264: f64 = 0.0f64;
-        let mut reg_265: Word = 0u64;
-        reg_223 = arg_0_scalar;
-        reg_224 = 3.0f64;
-        reg_225 = reg_223 * reg_224;
-        reg_226 = 27u64;
-        let call_result = self.osc(f64_to_word(reg_225));
-        reg_227 = word_to_f64(call_result);
-        reg_228 = 3.0f64;
-        reg_229 = reg_227 / reg_228;
-        reg_260 = 37u64;
-        let mut closure_upvalues = Vec::new();
-        let mut closure_indirect = Vec::new();
-        reg_261 = self.closures.alloc(reg_260, closure_upvalues, closure_indirect, 1usize).unwrap();
-        reg_262 = reg_261;
-        reg_263 = reg_261;
-        reg_264 = reg_229 + word_to_f64(reg_261);
-        return f64_to_word(reg_264);
-    }
-
-    fn dispatch_lambda_7(&mut self, args: &[Word]) -> Vec<Word> {
-        let mut arg_offset = 0usize;
-        let arg_0_words = copy_words::<1>(&args[arg_offset..arg_offset + 1]).unwrap();
-        arg_offset += 1;
-        let arg_0_value = arg_0_words[0];
-        let result = self.lambda_7(arg_0_value);
-        [result].to_vec()
-    }
-
-    #[inline(always)]
-    fn lambda_7(&mut self, arg_0_value: Word) -> Word {
-        let arg_0 = [arg_0_value];
-        let arg_0_scalar = word_to_f64(arg_0_value);
-        let mut reg_230: f64 = 0.0f64;
+        let mut reg_230: Word = 0u64;
         let mut reg_231: f64 = 0.0f64;
         let mut reg_232: f64 = 0.0f64;
-        let mut reg_233: Word = 0u64;
+        let mut reg_233: f64 = 0.0f64;
         let mut reg_234: f64 = 0.0f64;
         let mut reg_235: f64 = 0.0f64;
         let mut reg_236: f64 = 0.0f64;
+        let mut reg_237: Word = 0u64;
+        let mut reg_238: f64 = 0.0f64;
+        let mut reg_239: f64 = 0.0f64;
+        let mut reg_240: f64 = 0.0f64;
+        let mut reg_241: f64 = 0.0f64;
+        let mut reg_242: Word = 0u64;
+        let mut reg_243: f64 = 0.0f64;
+        let mut reg_244: f64 = 0.0f64;
+        let mut reg_245: f64 = 0.0f64;
+        let mut reg_246: f64 = 0.0f64;
+        let mut reg_247: f64 = 0.0f64;
+        let mut reg_248: f64 = 0.0f64;
+        let mut reg_249: f64 = 0.0f64;
+        let mut reg_250: f64 = 0.0f64;
+        let mut reg_251: f64 = 0.0f64;
+        let mut reg_252: f64 = 0.0f64;
+        let mut reg_253: f64 = 0.0f64;
         let mut reg_254: Word = 0u64;
         let mut reg_255: Word = 0u64;
         let mut reg_256: Word = 0u64;
-        let mut reg_257: Word = 0u64;
-        let mut reg_258: f64 = 0.0f64;
+        let mut reg_257: f64 = 0.0f64;
+        let mut reg_258: Word = 0u64;
         let mut reg_259: Word = 0u64;
-        reg_230 = arg_0_scalar;
-        reg_231 = 2.0f64;
-        reg_232 = reg_230 * reg_231;
-        reg_233 = 27u64;
-        let call_result = self.osc(f64_to_word(reg_232));
-        reg_234 = word_to_f64(call_result);
-        reg_235 = 2.0f64;
-        reg_236 = reg_234 / reg_235;
-        reg_254 = 38u64;
-        let mut closure_upvalues = Vec::new();
-        let mut closure_indirect = Vec::new();
-        reg_255 = self.closures.alloc(reg_254, closure_upvalues, closure_indirect, 1usize).unwrap();
-        reg_256 = reg_255;
-        reg_257 = reg_255;
-        reg_258 = reg_236 + word_to_f64(reg_255);
-        return f64_to_word(reg_258);
-    }
-
-    fn dispatch_lambda_8(&mut self, args: &[Word]) -> Vec<Word> {
-        let mut arg_offset = 0usize;
-        let arg_0_words = copy_words::<1>(&args[arg_offset..arg_offset + 1]).unwrap();
-        arg_offset += 1;
-        let arg_0_value = arg_0_words[0];
-        let result = self.lambda_8(arg_0_value);
-        [result].to_vec()
-    }
-
-    #[inline(always)]
-    fn lambda_8(&mut self, arg_0_value: Word) -> Word {
-        let arg_0 = [arg_0_value];
-        let arg_0_scalar = word_to_f64(arg_0_value);
-        let mut reg_237: f64 = 0.0f64;
-        let mut reg_238: f64 = 0.0f64;
-        let mut reg_239: f64 = 0.0f64;
-        let mut reg_240: Word = 0u64;
-        let mut reg_241: f64 = 0.0f64;
-        let mut reg_242: f64 = 0.0f64;
-        let mut reg_243: f64 = 0.0f64;
-        let mut reg_248: Word = 0u64;
-        let mut reg_249: Word = 0u64;
-        let mut reg_250: Word = 0u64;
-        let mut reg_251: Word = 0u64;
-        let mut reg_252: f64 = 0.0f64;
-        let mut reg_253: Word = 0u64;
-        reg_237 = arg_0_scalar;
-        reg_238 = 1.0f64;
-        reg_239 = reg_237 * reg_238;
-        reg_240 = 27u64;
-        let call_result = self.osc(f64_to_word(reg_239));
-        reg_241 = word_to_f64(call_result);
-        reg_242 = 1.0f64;
-        reg_243 = reg_241 / reg_242;
-        reg_248 = 39u64;
-        let mut closure_upvalues = Vec::new();
-        let mut closure_indirect = Vec::new();
-        reg_249 = self.closures.alloc(reg_248, closure_upvalues, closure_indirect, 1usize).unwrap();
-        reg_250 = reg_249;
-        reg_251 = reg_249;
-        reg_252 = reg_243 + word_to_f64(reg_249);
-        return f64_to_word(reg_252);
-    }
-
-    fn dispatch_lambda_9(&mut self, args: &[Word]) -> Vec<Word> {
-        let mut arg_offset = 0usize;
-        let arg_0_words = copy_words::<1>(&args[arg_offset..arg_offset + 1]).unwrap();
-        arg_offset += 1;
-        let arg_0_value = arg_0_words[0];
-        let result = self.lambda_9(arg_0_value);
-        [result].to_vec()
-    }
-
-    #[inline(always)]
-    fn lambda_9(&mut self, arg_0_value: Word) -> Word {
-        let arg_0 = [arg_0_value];
-        let arg_0_scalar = word_to_f64(arg_0_value);
-        let mut reg_244: f64 = 0.0f64;
-        let mut reg_245: Word = 0u64;
-        let mut reg_246: f64 = 0.0f64;
-        let mut reg_247: Word = 0u64;
-        reg_244 = arg_0_scalar;
-        reg_245 = 27u64;
-        let call_result = self.osc(f64_to_word(reg_244));
-        reg_246 = word_to_f64(call_result);
-        return f64_to_word(reg_246);
+        let mut reg_260: f64 = 0.0f64;
+        let mut reg_261: Word = 0u64;
+        let mut reg_262: Word = 0u64;
+        let mut reg_263: Word = 0u64;
+        let mut stack_alloc_254 = [0u64; 1];
+        let mut stack_alloc_256 = [0u64; 2];
+        reg_171 = 50.0f64;
+        reg_172 = 10.0f64;
+        reg_173 = reg_171 * reg_172;
+        reg_174 = 27u64;
+        let call_result = self.osc(f64_to_word(reg_173));
+        reg_175 = word_to_f64(call_result);
+        reg_176 = 10.0f64;
+        reg_177 = reg_175 / reg_176;
+        reg_178 = 50.0f64;
+        reg_179 = 9.0f64;
+        reg_180 = reg_178 * reg_179;
+        {
+            let state = self.get_current_statestorage();
+            state.push_pos(1usize);
+        }
+        reg_181 = 27u64;
+        let call_result = self.osc(f64_to_word(reg_180));
+        reg_182 = word_to_f64(call_result);
+        reg_183 = 9.0f64;
+        reg_184 = reg_182 / reg_183;
+        reg_185 = 50.0f64;
+        reg_186 = 8.0f64;
+        reg_187 = reg_185 * reg_186;
+        {
+            let state = self.get_current_statestorage();
+            state.push_pos(1usize);
+        }
+        reg_188 = 27u64;
+        let call_result = self.osc(f64_to_word(reg_187));
+        reg_189 = word_to_f64(call_result);
+        reg_190 = 8.0f64;
+        reg_191 = reg_189 / reg_190;
+        reg_192 = 50.0f64;
+        reg_193 = 7.0f64;
+        reg_194 = reg_192 * reg_193;
+        {
+            let state = self.get_current_statestorage();
+            state.push_pos(1usize);
+        }
+        reg_195 = 27u64;
+        let call_result = self.osc(f64_to_word(reg_194));
+        reg_196 = word_to_f64(call_result);
+        reg_197 = 7.0f64;
+        reg_198 = reg_196 / reg_197;
+        reg_199 = 50.0f64;
+        reg_200 = 6.0f64;
+        reg_201 = reg_199 * reg_200;
+        {
+            let state = self.get_current_statestorage();
+            state.push_pos(1usize);
+        }
+        reg_202 = 27u64;
+        let call_result = self.osc(f64_to_word(reg_201));
+        reg_203 = word_to_f64(call_result);
+        reg_204 = 6.0f64;
+        reg_205 = reg_203 / reg_204;
+        reg_206 = 50.0f64;
+        reg_207 = 5.0f64;
+        reg_208 = reg_206 * reg_207;
+        {
+            let state = self.get_current_statestorage();
+            state.push_pos(1usize);
+        }
+        reg_209 = 27u64;
+        let call_result = self.osc(f64_to_word(reg_208));
+        reg_210 = word_to_f64(call_result);
+        reg_211 = 5.0f64;
+        reg_212 = reg_210 / reg_211;
+        reg_213 = 50.0f64;
+        reg_214 = 4.0f64;
+        reg_215 = reg_213 * reg_214;
+        {
+            let state = self.get_current_statestorage();
+            state.push_pos(1usize);
+        }
+        reg_216 = 27u64;
+        let call_result = self.osc(f64_to_word(reg_215));
+        reg_217 = word_to_f64(call_result);
+        reg_218 = 4.0f64;
+        reg_219 = reg_217 / reg_218;
+        reg_220 = 50.0f64;
+        reg_221 = 3.0f64;
+        reg_222 = reg_220 * reg_221;
+        {
+            let state = self.get_current_statestorage();
+            state.push_pos(1usize);
+        }
+        reg_223 = 27u64;
+        let call_result = self.osc(f64_to_word(reg_222));
+        reg_224 = word_to_f64(call_result);
+        reg_225 = 3.0f64;
+        reg_226 = reg_224 / reg_225;
+        reg_227 = 50.0f64;
+        reg_228 = 2.0f64;
+        reg_229 = reg_227 * reg_228;
+        {
+            let state = self.get_current_statestorage();
+            state.push_pos(1usize);
+        }
+        reg_230 = 27u64;
+        let call_result = self.osc(f64_to_word(reg_229));
+        reg_231 = word_to_f64(call_result);
+        reg_232 = 2.0f64;
+        reg_233 = reg_231 / reg_232;
+        reg_234 = 50.0f64;
+        reg_235 = 1.0f64;
+        reg_236 = reg_234 * reg_235;
+        {
+            let state = self.get_current_statestorage();
+            state.push_pos(1usize);
+        }
+        reg_237 = 27u64;
+        let call_result = self.osc(f64_to_word(reg_236));
+        reg_238 = word_to_f64(call_result);
+        reg_239 = 1.0f64;
+        reg_240 = reg_238 / reg_239;
+        reg_241 = 50.0f64;
+        {
+            let state = self.get_current_statestorage();
+            state.push_pos(1usize);
+        }
+        reg_242 = 27u64;
+        let call_result = self.osc(f64_to_word(reg_241));
+        reg_243 = word_to_f64(call_result);
+        reg_244 = reg_240 + reg_243;
+        reg_245 = reg_233 + reg_244;
+        reg_246 = reg_226 + reg_245;
+        reg_247 = reg_219 + reg_246;
+        reg_248 = reg_212 + reg_247;
+        reg_249 = reg_205 + reg_248;
+        reg_250 = reg_198 + reg_249;
+        reg_251 = reg_191 + reg_250;
+        reg_252 = reg_184 + reg_251;
+        reg_253 = reg_177 + reg_252;
+        stack_alloc_254[0usize] = f64_to_word(reg_253);
+        reg_257 = word_to_f64(stack_alloc_254[0usize]);
+        stack_alloc_256[0usize] = f64_to_word(reg_257);
+        reg_260 = word_to_f64(stack_alloc_254[0usize]);
+        stack_alloc_256[1usize] = f64_to_word(reg_260);
+        {
+            let state = self.get_current_statestorage();
+            state.pop_pos(10usize);
+        }
+        ret_words.copy_from_slice(&stack_alloc_256[0usize..2usize]);
+        return ();
     }
 
 }

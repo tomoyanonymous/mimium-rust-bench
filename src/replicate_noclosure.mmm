@@ -6,20 +6,20 @@ let osc = |freq|{
 }
 
 #stage(macro)
-fn replicate (n,gen:`(float)->float)->`(float)->float{
+fn replicate (n,gen:`(float)->float,base_rate)->`float{
+    let rate = base_rate |> lift_f
     if (n>0.0){
         let gain = n |> lift_f
-        `{|rate| ($gen)(rate*$gain)/$gain + replicate!(n - 1.0 ,gen)(rate) }
+        `{($gen)($rate*$gain)/$gain + $replicate(n - 1.0 ,gen,base_rate) }
     }else{
-        `{|rate| ($gen)(rate)}
+        `{($gen)($rate)}
     }
 }
 
 #stage(main)
 
 fn dsp(){
-    let f = 50
-    let r =  replicate!(10, `osc)(f)
+    let r =  replicate!(10, `osc,50)
     (r,r)
+    
 }
-
