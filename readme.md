@@ -56,3 +56,10 @@ test mimium_10_sine_oscillators ... bench:     130,797.50 ns/iter (+/- 21,112.80
 test faust_10_sine_oscillators  ... bench:      18,753.44 ns/iter (+/- 13,774.10) = 218 MB/s
 test mimium_10_sine_oscillators ... bench:      56,683.68 ns/iter (+/- 13,491.20) = 289 MB/s
 ```
+
+## fixed unused casts
+
+```log
+test faust_10_sine_oscillators  ... bench:      19,008.53 ns/iter (+/- 1,140.89) = 215 MB/s
+test mimium_10_sine_oscillators ... bench:      19,507.43 ns/iter (+/- 3,209.89) = 839 MB/s
+```

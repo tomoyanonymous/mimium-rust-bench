@@ -1024,7 +1024,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         reg_4 = 2u64;
         let call_result = self.math_E();
         reg_5 = word_to_f64(call_result);
-        reg_6 = word_to_f64(f64_to_word(arg_0_scalar));
+        reg_6 = arg_0_scalar;
         reg_7 = reg_5.powf(reg_6);
         return f64_to_word(reg_7);
     }
@@ -1048,7 +1048,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let mut reg_12: f64 = 0.0f64;
         let mut reg_13: f64 = 0.0f64;
         let mut reg_14: Word = 0u64;
-        reg_9 = word_to_f64(f64_to_word(arg_0_scalar));
+        reg_9 = arg_0_scalar;
         reg_10 = reg_9.ln();
         reg_11 = 2.0f64;
         reg_12 = reg_11.ln();
@@ -1075,7 +1075,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let mut reg_18: f64 = 0.0f64;
         let mut reg_19: f64 = 0.0f64;
         let mut reg_20: Word = 0u64;
-        reg_15 = word_to_f64(f64_to_word(arg_0_scalar));
+        reg_15 = arg_0_scalar;
         reg_16 = reg_15.ln();
         reg_17 = 10.0f64;
         reg_18 = reg_17.ln();
@@ -1106,8 +1106,8 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let mut reg_28: f64 = 0.0f64;
         let mut reg_29: Word = 0u64;
         reg_21 = word_to_f64({ let state = self.get_current_statestorage(); state.get_state_word() });
-        reg_22 = word_to_f64(f64_to_word(reg_21));
-        reg_23 = word_to_f64(f64_to_word(arg_0_scalar));
+        reg_22 = reg_21;
+        reg_23 = arg_0_scalar;
         reg_24 = self.host.sample_rate();
         reg_25 = reg_23 / reg_24;
         reg_26 = reg_22 + reg_25;
@@ -1147,11 +1147,11 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let mut reg_37: f64 = 0.0f64;
         let mut reg_38: f64 = 0.0f64;
         let mut reg_39: Word = 0u64;
-        reg_32 = word_to_f64(f64_to_word(arg_0_scalar));
+        reg_32 = arg_0_scalar;
         reg_33 = 6u64;
         let call_result = self.osc_phasor_zero(f64_to_word(reg_32));
         reg_34 = word_to_f64(call_result);
-        reg_35 = word_to_f64(f64_to_word(arg_1_scalar));
+        reg_35 = arg_1_scalar;
         reg_36 = reg_34 + reg_35;
         reg_37 = 1.0f64;
         reg_38 = reg_36 % reg_37;
@@ -1199,8 +1199,8 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let mut reg_48: f64 = 0.0f64;
         let mut reg_49: f64 = 0.0f64;
         let mut reg_50: Word = 0u64;
-        reg_42 = word_to_f64(f64_to_word(arg_0_scalar));
-        reg_43 = word_to_f64(f64_to_word(arg_1_scalar));
+        reg_42 = arg_0_scalar;
+        reg_43 = arg_1_scalar;
         reg_44 = 7u64;
         let call_result = self.osc_phasor(f64_to_word(reg_42), f64_to_word(reg_43));
         reg_45 = word_to_f64(call_result);
@@ -1248,8 +1248,8 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let mut reg_55: Word = 0u64;
         let mut reg_56: f64 = 0.0f64;
         let mut reg_57: Word = 0u64;
-        reg_53 = word_to_f64(f64_to_word(arg_0_scalar));
-        reg_54 = word_to_f64(f64_to_word(arg_1_scalar));
+        reg_53 = arg_0_scalar;
+        reg_54 = arg_1_scalar;
         reg_55 = 9u64;
         let call_result = self.osc_lfsaw(f64_to_word(reg_53), f64_to_word(reg_54));
         reg_56 = word_to_f64(call_result);
@@ -1334,12 +1334,11 @@ impl<H: MimiumHost> MimiumProgram<H> {
         loop {
             match bb {
                 0 => {
-                    reg_60 = word_to_f64(f64_to_word(arg_0_scalar));
-                    reg_61 = word_to_f64(f64_to_word(arg_1_scalar));
+                    reg_60 = arg_0_scalar;
+                    reg_61 = arg_1_scalar;
                     reg_62 = 7u64;
                     let call_result = self.osc_phasor(f64_to_word(reg_60), f64_to_word(reg_61));
                     reg_63 = word_to_f64(call_result);
-                    reg_64 = self.memory.alloc(1usize);
                     stack_alloc_64[0usize] = f64_to_word(reg_63);
                     reg_66 = word_to_f64(stack_alloc_64[0usize]);
                     reg_67 = 0.25f64;
@@ -1409,7 +1408,6 @@ impl<H: MimiumHost> MimiumProgram<H> {
                     } else {
                         panic!("{}", format!("phi predecessor mismatch in block 6: {}", pred_bb));
                     }
-                    reg_91 = self.memory.alloc(1usize);
                     stack_alloc_91[0usize] = f64_to_word(reg_90);
                     reg_93 = word_to_f64(stack_alloc_91[0usize]);
                     reg_94 = 0.5f64;
@@ -1464,8 +1462,8 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let mut reg_107: f64 = 0.0f64;
         let mut reg_108: f64 = 0.0f64;
         let mut reg_109: Word = 0u64;
-        reg_101 = word_to_f64(f64_to_word(arg_0_scalar));
-        reg_102 = word_to_f64(f64_to_word(arg_1_scalar));
+        reg_101 = arg_0_scalar;
+        reg_102 = arg_1_scalar;
         reg_103 = 13u64;
         let call_result = self.osc_tri(f64_to_word(reg_101), f64_to_word(reg_102));
         reg_104 = word_to_f64(call_result);
@@ -1531,12 +1529,12 @@ impl<H: MimiumHost> MimiumProgram<H> {
         loop {
             match bb {
                 0 => {
-                    reg_114 = word_to_f64(f64_to_word(arg_0_scalar));
-                    reg_115 = word_to_f64(f64_to_word(arg_1_scalar));
+                    reg_114 = arg_0_scalar;
+                    reg_115 = arg_1_scalar;
                     reg_116 = 7u64;
                     let call_result = self.osc_phasor(f64_to_word(reg_114), f64_to_word(reg_115));
                     reg_117 = word_to_f64(call_result);
-                    reg_118 = word_to_f64(f64_to_word(arg_2_scalar));
+                    reg_118 = arg_2_scalar;
                     reg_119 = if reg_117 < reg_118 { 1.0 } else { 0.0 };
                     pred_bb = 0;
                     bb = if truthy(f64_to_word(reg_119)) { 1usize } else { 2usize };
@@ -1638,12 +1636,12 @@ impl<H: MimiumHost> MimiumProgram<H> {
         loop {
             match bb {
                 0 => {
-                    reg_131 = word_to_f64(f64_to_word(arg_0_scalar));
-                    reg_132 = word_to_f64(f64_to_word(arg_1_scalar));
+                    reg_131 = arg_0_scalar;
+                    reg_132 = arg_1_scalar;
                     reg_133 = 7u64;
                     let call_result = self.osc_phasor(f64_to_word(reg_131), f64_to_word(reg_132));
                     reg_134 = word_to_f64(call_result);
-                    reg_135 = word_to_f64(f64_to_word(arg_2_scalar));
+                    reg_135 = arg_2_scalar;
                     reg_136 = if reg_134 < reg_135 { 1.0 } else { 0.0 };
                     pred_bb = 0;
                     bb = if truthy(f64_to_word(reg_136)) { 1usize } else { 2usize };
@@ -1733,8 +1731,8 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let mut reg_152: f64 = 0.0f64;
         let mut reg_153: f64 = 0.0f64;
         let mut reg_154: Word = 0u64;
-        reg_144 = word_to_f64(f64_to_word(arg_0_scalar));
-        reg_145 = word_to_f64(f64_to_word(arg_1_scalar));
+        reg_144 = arg_0_scalar;
+        reg_145 = arg_1_scalar;
         reg_146 = 7u64;
         let call_result = self.osc_phasor(f64_to_word(reg_144), f64_to_word(reg_145));
         reg_147 = word_to_f64(call_result);
@@ -1789,8 +1787,8 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let mut reg_163: f64 = 0.0f64;
         let mut reg_164: f64 = 0.0f64;
         let mut reg_165: Word = 0u64;
-        reg_157 = word_to_f64(f64_to_word(arg_0_scalar));
-        reg_158 = word_to_f64(f64_to_word(arg_1_scalar));
+        reg_157 = arg_0_scalar;
+        reg_158 = arg_1_scalar;
         reg_159 = 23u64;
         let call_result = self.osc_sinwave(f64_to_word(reg_157), f64_to_word(reg_158));
         reg_160 = word_to_f64(call_result);
@@ -1833,7 +1831,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let mut reg_168: Word = 0u64;
         let mut reg_169: f64 = 0.0f64;
         let mut reg_170: Word = 0u64;
-        reg_166 = word_to_f64(f64_to_word(arg_0_scalar));
+        reg_166 = arg_0_scalar;
         reg_167 = 0.0f64;
         reg_168 = 23u64;
         let call_result = self.osc_sinwave(f64_to_word(reg_166), f64_to_word(reg_167));
@@ -1870,15 +1868,12 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let mut stack_alloc_311 = [0u64; 1];
         let mut stack_alloc_313 = [0u64; 2];
         reg_171 = 50.0f64;
-        reg_172 = self.memory.alloc(1usize);
         stack_alloc_172[0usize] = f64_to_word(reg_171);
         reg_308 = word_to_f64(stack_alloc_172[0usize]);
         reg_309 = 29u64;
         let call_result = self.r(f64_to_word(reg_308));
         reg_310 = word_to_f64(call_result);
-        reg_311 = self.memory.alloc(1usize);
         stack_alloc_311[0usize] = f64_to_word(reg_310);
-        reg_313 = self.memory.alloc(2usize);
         reg_314 = word_to_f64(stack_alloc_311[0usize]);
         stack_alloc_313[0usize] = f64_to_word(reg_314);
         reg_317 = word_to_f64(stack_alloc_311[0usize]);
@@ -1913,7 +1908,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let mut reg_305: Word = 0u64;
         let mut reg_306: f64 = 0.0f64;
         let mut reg_307: Word = 0u64;
-        reg_174 = word_to_f64(f64_to_word(arg_0_scalar));
+        reg_174 = arg_0_scalar;
         reg_175 = 10.0f64;
         reg_176 = reg_174 * reg_175;
         reg_177 = 27u64;
@@ -1957,7 +1952,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let mut reg_299: Word = 0u64;
         let mut reg_300: f64 = 0.0f64;
         let mut reg_301: Word = 0u64;
-        reg_181 = word_to_f64(f64_to_word(arg_0_scalar));
+        reg_181 = arg_0_scalar;
         reg_182 = 9.0f64;
         reg_183 = reg_181 * reg_182;
         reg_184 = 27u64;
@@ -2001,7 +1996,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let mut reg_293: Word = 0u64;
         let mut reg_294: f64 = 0.0f64;
         let mut reg_295: Word = 0u64;
-        reg_188 = word_to_f64(f64_to_word(arg_0_scalar));
+        reg_188 = arg_0_scalar;
         reg_189 = 8.0f64;
         reg_190 = reg_188 * reg_189;
         reg_191 = 27u64;
@@ -2045,7 +2040,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let mut reg_287: Word = 0u64;
         let mut reg_288: f64 = 0.0f64;
         let mut reg_289: Word = 0u64;
-        reg_195 = word_to_f64(f64_to_word(arg_0_scalar));
+        reg_195 = arg_0_scalar;
         reg_196 = 7.0f64;
         reg_197 = reg_195 * reg_196;
         reg_198 = 27u64;
@@ -2089,7 +2084,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let mut reg_281: Word = 0u64;
         let mut reg_282: f64 = 0.0f64;
         let mut reg_283: Word = 0u64;
-        reg_202 = word_to_f64(f64_to_word(arg_0_scalar));
+        reg_202 = arg_0_scalar;
         reg_203 = 6.0f64;
         reg_204 = reg_202 * reg_203;
         reg_205 = 27u64;
@@ -2133,7 +2128,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let mut reg_275: Word = 0u64;
         let mut reg_276: f64 = 0.0f64;
         let mut reg_277: Word = 0u64;
-        reg_209 = word_to_f64(f64_to_word(arg_0_scalar));
+        reg_209 = arg_0_scalar;
         reg_210 = 5.0f64;
         reg_211 = reg_209 * reg_210;
         reg_212 = 27u64;
@@ -2177,7 +2172,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let mut reg_269: Word = 0u64;
         let mut reg_270: f64 = 0.0f64;
         let mut reg_271: Word = 0u64;
-        reg_216 = word_to_f64(f64_to_word(arg_0_scalar));
+        reg_216 = arg_0_scalar;
         reg_217 = 4.0f64;
         reg_218 = reg_216 * reg_217;
         reg_219 = 27u64;
@@ -2221,7 +2216,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let mut reg_263: Word = 0u64;
         let mut reg_264: f64 = 0.0f64;
         let mut reg_265: Word = 0u64;
-        reg_223 = word_to_f64(f64_to_word(arg_0_scalar));
+        reg_223 = arg_0_scalar;
         reg_224 = 3.0f64;
         reg_225 = reg_223 * reg_224;
         reg_226 = 27u64;
@@ -2265,7 +2260,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let mut reg_257: Word = 0u64;
         let mut reg_258: f64 = 0.0f64;
         let mut reg_259: Word = 0u64;
-        reg_230 = word_to_f64(f64_to_word(arg_0_scalar));
+        reg_230 = arg_0_scalar;
         reg_231 = 2.0f64;
         reg_232 = reg_230 * reg_231;
         reg_233 = 27u64;
@@ -2309,7 +2304,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let mut reg_251: Word = 0u64;
         let mut reg_252: f64 = 0.0f64;
         let mut reg_253: Word = 0u64;
-        reg_237 = word_to_f64(f64_to_word(arg_0_scalar));
+        reg_237 = arg_0_scalar;
         reg_238 = 1.0f64;
         reg_239 = reg_237 * reg_238;
         reg_240 = 27u64;
@@ -2344,7 +2339,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let mut reg_245: Word = 0u64;
         let mut reg_246: f64 = 0.0f64;
         let mut reg_247: Word = 0u64;
-        reg_244 = word_to_f64(f64_to_word(arg_0_scalar));
+        reg_244 = arg_0_scalar;
         reg_245 = 27u64;
         let call_result = self.osc(f64_to_word(reg_244));
         reg_246 = word_to_f64(call_result);
