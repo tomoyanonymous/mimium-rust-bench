@@ -421,6 +421,20 @@ impl<H: MimiumHost> MimiumProgram<H> {
         result
     }
 
+    pub fn dsp_frames_raw(&mut self, left: &mut [Word], right: &mut [Word]) {
+        assert_eq!(left.len(), right.len(), "left/right frame count must match");
+
+        let previous_function_state = self.current_function_state;
+        self.current_function_state = Some(28);
+
+        for (left_sample, right_sample) in left.iter_mut().zip(right.iter_mut()) {
+            let (next_left, next_right) = self.dsp();
+            *left_sample = next_left;
+            *right_sample = next_right;
+        }
+
+        self.current_function_state = previous_function_state;
+    }
 
 
     fn call_function_handle(&mut self, handle: Word, args: &[Word]) -> Vec<Word> {

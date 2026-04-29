@@ -32,14 +32,18 @@ fn faust_10_sine_oscillators(b: &mut Bencher) {
 #[bench]
 fn mimium_10_sine_oscillators(b: &mut Bencher) {
     let mut program = MimiumProgram::new();
+    let mut left = vec![0u64; FRAMES_PER_ITER];
+    let mut right = vec![0u64; FRAMES_PER_ITER];
     b.bytes = (FRAMES_PER_ITER * 2 * std::mem::size_of::<u64>()) as u64;
 
     b.iter(|| {
-        let mut checksum = 0u64;
-        for _ in 0..FRAMES_PER_ITER {
-            let (left, right) = program.dsp_step_raw();
-            checksum ^= black_box(left.rotate_left(7) ^ right);
-        }
+        program.dsp_frames_raw(&mut left, &mut right);
+        let checksum = left
+            .iter()
+            .zip(right.iter())
+            .fold(0u64, |acc, (&left_sample, &right_sample)| {
+                acc ^ black_box(left_sample.rotate_left(7) ^ right_sample)
+            });
         black_box(checksum)
     });
 }
