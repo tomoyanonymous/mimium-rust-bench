@@ -875,7 +875,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
 
     #[inline(always)]
     fn _mimium_global(&mut self) -> () {
-        let mut reg_321 = [0u64; 0];
+        let mut reg_321: Word = 0u64;
         return ();
     }
 
@@ -887,10 +887,10 @@ impl<H: MimiumHost> MimiumProgram<H> {
 
     #[inline(always)]
     fn math_PI(&mut self) -> Word {
-        let mut reg_0 = [0u64; 1];
-        let mut reg_1 = [0u64; 1];
-        reg_0[0] = f64_to_word(3.14159265359f64);
-        return reg_0[0];
+        let mut reg_0: f64 = 0.0f64;
+        let mut reg_1: Word = 0u64;
+        reg_0 = 3.14159265359f64;
+        return f64_to_word(reg_0);
     }
 
     fn dispatch_math_E(&mut self, args: &[Word]) -> Vec<Word> {
@@ -901,10 +901,10 @@ impl<H: MimiumHost> MimiumProgram<H> {
 
     #[inline(always)]
     fn math_E(&mut self) -> Word {
-        let mut reg_2 = [0u64; 1];
-        let mut reg_3 = [0u64; 1];
-        reg_2[0] = f64_to_word(2.71828182846f64);
-        return reg_2[0];
+        let mut reg_2: f64 = 0.0f64;
+        let mut reg_3: Word = 0u64;
+        reg_2 = 2.71828182846f64;
+        return f64_to_word(reg_2);
     }
 
     fn dispatch_math_exp(&mut self, args: &[Word]) -> Vec<Word> {
@@ -919,17 +919,18 @@ impl<H: MimiumHost> MimiumProgram<H> {
     #[inline(always)]
     fn math_exp(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
-        let mut reg_4 = [0u64; 1];
-        let mut reg_5 = [0u64; 1];
-        let mut reg_6 = [0u64; 1];
-        let mut reg_7 = [0u64; 1];
-        let mut reg_8 = [0u64; 1];
-        reg_4[0] = 2u64;
+        let arg_0_scalar = word_to_f64(arg_0_value);
+        let mut reg_4: Word = 0u64;
+        let mut reg_5: f64 = 0.0f64;
+        let mut reg_6: f64 = 0.0f64;
+        let mut reg_7: f64 = 0.0f64;
+        let mut reg_8: Word = 0u64;
+        reg_4 = 2u64;
         let call_result = self.math_E();
-        reg_5 = [call_result];
-        reg_6 = vec_to_words::<1>(self.memory.load(arg_0[0], 1usize).unwrap()).unwrap();
-        reg_7[0] = f64_to_word(word_to_f64(reg_5[0]).powf(word_to_f64(reg_6[0])));
-        return reg_7[0];
+        reg_5 = word_to_f64(call_result);
+        reg_6 = word_to_f64(self.memory.load(f64_to_word(arg_0_scalar), 1usize).unwrap()[0]);
+        reg_7 = reg_5.powf(reg_6);
+        return f64_to_word(reg_7);
     }
 
     fn dispatch_math_log2(&mut self, args: &[Word]) -> Vec<Word> {
@@ -944,18 +945,19 @@ impl<H: MimiumHost> MimiumProgram<H> {
     #[inline(always)]
     fn math_log2(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
-        let mut reg_9 = [0u64; 1];
-        let mut reg_10 = [0u64; 1];
-        let mut reg_11 = [0u64; 1];
-        let mut reg_12 = [0u64; 1];
-        let mut reg_13 = [0u64; 1];
-        let mut reg_14 = [0u64; 1];
-        reg_9 = vec_to_words::<1>(self.memory.load(arg_0[0], 1usize).unwrap()).unwrap();
-        reg_10[0] = f64_to_word(word_to_f64(reg_9[0]).ln());
-        reg_11[0] = f64_to_word(2.0f64);
-        reg_12[0] = f64_to_word(word_to_f64(reg_11[0]).ln());
-        reg_13[0] = f64_to_word(word_to_f64(reg_10[0]) / word_to_f64(reg_12[0]));
-        return reg_13[0];
+        let arg_0_scalar = word_to_f64(arg_0_value);
+        let mut reg_9: f64 = 0.0f64;
+        let mut reg_10: f64 = 0.0f64;
+        let mut reg_11: f64 = 0.0f64;
+        let mut reg_12: f64 = 0.0f64;
+        let mut reg_13: f64 = 0.0f64;
+        let mut reg_14: Word = 0u64;
+        reg_9 = word_to_f64(self.memory.load(f64_to_word(arg_0_scalar), 1usize).unwrap()[0]);
+        reg_10 = reg_9.ln();
+        reg_11 = 2.0f64;
+        reg_12 = reg_11.ln();
+        reg_13 = reg_10 / reg_12;
+        return f64_to_word(reg_13);
     }
 
     fn dispatch_math_log10(&mut self, args: &[Word]) -> Vec<Word> {
@@ -970,18 +972,19 @@ impl<H: MimiumHost> MimiumProgram<H> {
     #[inline(always)]
     fn math_log10(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
-        let mut reg_15 = [0u64; 1];
-        let mut reg_16 = [0u64; 1];
-        let mut reg_17 = [0u64; 1];
-        let mut reg_18 = [0u64; 1];
-        let mut reg_19 = [0u64; 1];
-        let mut reg_20 = [0u64; 1];
-        reg_15 = vec_to_words::<1>(self.memory.load(arg_0[0], 1usize).unwrap()).unwrap();
-        reg_16[0] = f64_to_word(word_to_f64(reg_15[0]).ln());
-        reg_17[0] = f64_to_word(10.0f64);
-        reg_18[0] = f64_to_word(word_to_f64(reg_17[0]).ln());
-        reg_19[0] = f64_to_word(word_to_f64(reg_16[0]) / word_to_f64(reg_18[0]));
-        return reg_19[0];
+        let arg_0_scalar = word_to_f64(arg_0_value);
+        let mut reg_15: f64 = 0.0f64;
+        let mut reg_16: f64 = 0.0f64;
+        let mut reg_17: f64 = 0.0f64;
+        let mut reg_18: f64 = 0.0f64;
+        let mut reg_19: f64 = 0.0f64;
+        let mut reg_20: Word = 0u64;
+        reg_15 = word_to_f64(self.memory.load(f64_to_word(arg_0_scalar), 1usize).unwrap()[0]);
+        reg_16 = reg_15.ln();
+        reg_17 = 10.0f64;
+        reg_18 = reg_17.ln();
+        reg_19 = reg_16 / reg_18;
+        return f64_to_word(reg_19);
     }
 
     fn dispatch_osc_phasor_zero(&mut self, args: &[Word]) -> Vec<Word> {
@@ -996,25 +999,26 @@ impl<H: MimiumHost> MimiumProgram<H> {
     #[inline(always)]
     fn osc_phasor_zero(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
-        let mut reg_21 = [0u64; 1];
-        let mut reg_22 = [0u64; 1];
-        let mut reg_23 = [0u64; 1];
-        let mut reg_24 = [0u64; 1];
-        let mut reg_25 = [0u64; 1];
-        let mut reg_26 = [0u64; 1];
-        let mut reg_27 = [0u64; 1];
-        let mut reg_28 = [0u64; 1];
-        let mut reg_29 = [0u64; 1];
-        reg_21 = vec_to_words::<1>({ let state = self.get_current_statestorage(); state.get_state(1usize) }).unwrap();
-        reg_22 = vec_to_words::<1>(self.memory.load(reg_21[0], 1usize).unwrap()).unwrap();
-        reg_23 = vec_to_words::<1>(self.memory.load(arg_0[0], 1usize).unwrap()).unwrap();
-        reg_24[0] = f64_to_word(self.host.sample_rate());
-        reg_25[0] = f64_to_word(word_to_f64(reg_23[0]) / word_to_f64(reg_24[0]));
-        reg_26[0] = f64_to_word(word_to_f64(reg_22[0]) + word_to_f64(reg_25[0]));
-        reg_27[0] = f64_to_word(1.0f64);
-        reg_28[0] = f64_to_word(word_to_f64(reg_26[0]) % word_to_f64(reg_27[0]));
-        let result = reg_28[0];
-        let next_state_words = &[reg_28[0]].to_vec();
+        let arg_0_scalar = word_to_f64(arg_0_value);
+        let mut reg_21: f64 = 0.0f64;
+        let mut reg_22: f64 = 0.0f64;
+        let mut reg_23: f64 = 0.0f64;
+        let mut reg_24: f64 = 0.0f64;
+        let mut reg_25: f64 = 0.0f64;
+        let mut reg_26: f64 = 0.0f64;
+        let mut reg_27: f64 = 0.0f64;
+        let mut reg_28: f64 = 0.0f64;
+        let mut reg_29: Word = 0u64;
+        reg_21 = word_to_f64({ let state = self.get_current_statestorage(); state.get_state(1usize)[0] });
+        reg_22 = word_to_f64(self.memory.load(f64_to_word(reg_21), 1usize).unwrap()[0]);
+        reg_23 = word_to_f64(self.memory.load(f64_to_word(arg_0_scalar), 1usize).unwrap()[0]);
+        reg_24 = self.host.sample_rate();
+        reg_25 = reg_23 / reg_24;
+        reg_26 = reg_22 + reg_25;
+        reg_27 = 1.0f64;
+        reg_28 = reg_26 % reg_27;
+        let result = f64_to_word(reg_28);
+        let next_state_words = &[f64_to_word(reg_28)].to_vec();
         {
             let state = self.get_current_statestorage();
             state.set_state(&next_state_words, 1usize);
@@ -1037,24 +1041,26 @@ impl<H: MimiumHost> MimiumProgram<H> {
     #[inline(always)]
     fn osc_phasor(&mut self, arg_0_value: Word, arg_1_value: Word) -> Word {
         let arg_0 = [arg_0_value];
+        let arg_0_scalar = word_to_f64(arg_0_value);
         let arg_1 = [arg_1_value];
-        let mut reg_32 = [0u64; 1];
-        let mut reg_33 = [0u64; 1];
-        let mut reg_34 = [0u64; 1];
-        let mut reg_35 = [0u64; 1];
-        let mut reg_36 = [0u64; 1];
-        let mut reg_37 = [0u64; 1];
-        let mut reg_38 = [0u64; 1];
-        let mut reg_39 = [0u64; 1];
-        reg_32 = vec_to_words::<1>(self.memory.load(arg_0[0], 1usize).unwrap()).unwrap();
-        reg_33[0] = 6u64;
-        let call_result = self.osc_phasor_zero(reg_32[0]);
-        reg_34 = [call_result];
-        reg_35 = vec_to_words::<1>(self.memory.load(arg_1[0], 1usize).unwrap()).unwrap();
-        reg_36[0] = f64_to_word(word_to_f64(reg_34[0]) + word_to_f64(reg_35[0]));
-        reg_37[0] = f64_to_word(1.0f64);
-        reg_38[0] = f64_to_word(word_to_f64(reg_36[0]) % word_to_f64(reg_37[0]));
-        return reg_38[0];
+        let arg_1_scalar = word_to_f64(arg_1_value);
+        let mut reg_32: f64 = 0.0f64;
+        let mut reg_33: Word = 0u64;
+        let mut reg_34: f64 = 0.0f64;
+        let mut reg_35: f64 = 0.0f64;
+        let mut reg_36: f64 = 0.0f64;
+        let mut reg_37: f64 = 0.0f64;
+        let mut reg_38: f64 = 0.0f64;
+        let mut reg_39: Word = 0u64;
+        reg_32 = word_to_f64(self.memory.load(f64_to_word(arg_0_scalar), 1usize).unwrap()[0]);
+        reg_33 = 6u64;
+        let call_result = self.osc_phasor_zero(f64_to_word(reg_32));
+        reg_34 = word_to_f64(call_result);
+        reg_35 = word_to_f64(self.memory.load(f64_to_word(arg_1_scalar), 1usize).unwrap()[0]);
+        reg_36 = reg_34 + reg_35;
+        reg_37 = 1.0f64;
+        reg_38 = reg_36 % reg_37;
+        return f64_to_word(reg_38);
     }
 
     fn dispatch___default_7_phase_shift(&mut self, args: &[Word]) -> Vec<Word> {
@@ -1065,10 +1071,10 @@ impl<H: MimiumHost> MimiumProgram<H> {
 
     #[inline(always)]
     fn __default_7_phase_shift(&mut self) -> Word {
-        let mut reg_30 = [0u64; 1];
-        let mut reg_31 = [0u64; 1];
-        reg_30[0] = f64_to_word(0.0f64);
-        return reg_30[0];
+        let mut reg_30: f64 = 0.0f64;
+        let mut reg_31: Word = 0u64;
+        reg_30 = 0.0f64;
+        return f64_to_word(reg_30);
     }
 
     fn dispatch_osc_lfsaw(&mut self, args: &[Word]) -> Vec<Word> {
@@ -1086,26 +1092,28 @@ impl<H: MimiumHost> MimiumProgram<H> {
     #[inline(always)]
     fn osc_lfsaw(&mut self, arg_0_value: Word, arg_1_value: Word) -> Word {
         let arg_0 = [arg_0_value];
+        let arg_0_scalar = word_to_f64(arg_0_value);
         let arg_1 = [arg_1_value];
-        let mut reg_42 = [0u64; 1];
-        let mut reg_43 = [0u64; 1];
-        let mut reg_44 = [0u64; 1];
-        let mut reg_45 = [0u64; 1];
-        let mut reg_46 = [0u64; 1];
-        let mut reg_47 = [0u64; 1];
-        let mut reg_48 = [0u64; 1];
-        let mut reg_49 = [0u64; 1];
-        let mut reg_50 = [0u64; 1];
-        reg_42 = vec_to_words::<1>(self.memory.load(arg_0[0], 1usize).unwrap()).unwrap();
-        reg_43 = vec_to_words::<1>(self.memory.load(arg_1[0], 1usize).unwrap()).unwrap();
-        reg_44[0] = 7u64;
-        let call_result = self.osc_phasor(reg_42[0], reg_43[0]);
-        reg_45 = [call_result];
-        reg_46[0] = f64_to_word(2.0f64);
-        reg_47[0] = f64_to_word(word_to_f64(reg_45[0]) * word_to_f64(reg_46[0]));
-        reg_48[0] = f64_to_word(1.0f64);
-        reg_49[0] = f64_to_word(word_to_f64(reg_47[0]) - word_to_f64(reg_48[0]));
-        return reg_49[0];
+        let arg_1_scalar = word_to_f64(arg_1_value);
+        let mut reg_42: f64 = 0.0f64;
+        let mut reg_43: f64 = 0.0f64;
+        let mut reg_44: Word = 0u64;
+        let mut reg_45: f64 = 0.0f64;
+        let mut reg_46: f64 = 0.0f64;
+        let mut reg_47: f64 = 0.0f64;
+        let mut reg_48: f64 = 0.0f64;
+        let mut reg_49: f64 = 0.0f64;
+        let mut reg_50: Word = 0u64;
+        reg_42 = word_to_f64(self.memory.load(f64_to_word(arg_0_scalar), 1usize).unwrap()[0]);
+        reg_43 = word_to_f64(self.memory.load(f64_to_word(arg_1_scalar), 1usize).unwrap()[0]);
+        reg_44 = 7u64;
+        let call_result = self.osc_phasor(f64_to_word(reg_42), f64_to_word(reg_43));
+        reg_45 = word_to_f64(call_result);
+        reg_46 = 2.0f64;
+        reg_47 = reg_45 * reg_46;
+        reg_48 = 1.0f64;
+        reg_49 = reg_47 - reg_48;
+        return f64_to_word(reg_49);
     }
 
     fn dispatch___default_9_phase(&mut self, args: &[Word]) -> Vec<Word> {
@@ -1116,10 +1124,10 @@ impl<H: MimiumHost> MimiumProgram<H> {
 
     #[inline(always)]
     fn __default_9_phase(&mut self) -> Word {
-        let mut reg_40 = [0u64; 1];
-        let mut reg_41 = [0u64; 1];
-        reg_40[0] = f64_to_word(0.0f64);
-        return reg_40[0];
+        let mut reg_40: f64 = 0.0f64;
+        let mut reg_41: Word = 0u64;
+        reg_40 = 0.0f64;
+        return f64_to_word(reg_40);
     }
 
     fn dispatch_osc_saw(&mut self, args: &[Word]) -> Vec<Word> {
@@ -1137,18 +1145,20 @@ impl<H: MimiumHost> MimiumProgram<H> {
     #[inline(always)]
     fn osc_saw(&mut self, arg_0_value: Word, arg_1_value: Word) -> Word {
         let arg_0 = [arg_0_value];
+        let arg_0_scalar = word_to_f64(arg_0_value);
         let arg_1 = [arg_1_value];
-        let mut reg_53 = [0u64; 1];
-        let mut reg_54 = [0u64; 1];
-        let mut reg_55 = [0u64; 1];
-        let mut reg_56 = [0u64; 1];
-        let mut reg_57 = [0u64; 1];
-        reg_53 = vec_to_words::<1>(self.memory.load(arg_0[0], 1usize).unwrap()).unwrap();
-        reg_54 = vec_to_words::<1>(self.memory.load(arg_1[0], 1usize).unwrap()).unwrap();
-        reg_55[0] = 9u64;
-        let call_result = self.osc_lfsaw(reg_53[0], reg_54[0]);
-        reg_56 = [call_result];
-        return reg_56[0];
+        let arg_1_scalar = word_to_f64(arg_1_value);
+        let mut reg_53: f64 = 0.0f64;
+        let mut reg_54: f64 = 0.0f64;
+        let mut reg_55: Word = 0u64;
+        let mut reg_56: f64 = 0.0f64;
+        let mut reg_57: Word = 0u64;
+        reg_53 = word_to_f64(self.memory.load(f64_to_word(arg_0_scalar), 1usize).unwrap()[0]);
+        reg_54 = word_to_f64(self.memory.load(f64_to_word(arg_1_scalar), 1usize).unwrap()[0]);
+        reg_55 = 9u64;
+        let call_result = self.osc_lfsaw(f64_to_word(reg_53), f64_to_word(reg_54));
+        reg_56 = word_to_f64(call_result);
+        return f64_to_word(reg_56);
     }
 
     fn dispatch___default_11_phase(&mut self, args: &[Word]) -> Vec<Word> {
@@ -1159,10 +1169,10 @@ impl<H: MimiumHost> MimiumProgram<H> {
 
     #[inline(always)]
     fn __default_11_phase(&mut self) -> Word {
-        let mut reg_51 = [0u64; 1];
-        let mut reg_52 = [0u64; 1];
-        reg_51[0] = f64_to_word(0.0f64);
-        return reg_51[0];
+        let mut reg_51: f64 = 0.0f64;
+        let mut reg_52: Word = 0u64;
+        reg_51 = 0.0f64;
+        return f64_to_word(reg_51);
     }
 
     fn dispatch_osc_tri(&mut self, args: &[Word]) -> Vec<Word> {
@@ -1180,102 +1190,104 @@ impl<H: MimiumHost> MimiumProgram<H> {
     #[inline(always)]
     fn osc_tri(&mut self, arg_0_value: Word, arg_1_value: Word) -> Word {
         let arg_0 = [arg_0_value];
+        let arg_0_scalar = word_to_f64(arg_0_value);
         let arg_1 = [arg_1_value];
-        let mut reg_60 = [0u64; 1];
-        let mut reg_61 = [0u64; 1];
-        let mut reg_62 = [0u64; 1];
-        let mut reg_63 = [0u64; 1];
-        let mut reg_64 = [0u64; 1];
-        let mut reg_65 = [0u64; 1];
-        let mut reg_66 = [0u64; 1];
-        let mut reg_67 = [0u64; 1];
-        let mut reg_68 = [0u64; 1];
-        let mut reg_69 = [0u64; 1];
-        let mut reg_70 = [0u64; 1];
-        let mut reg_71 = [0u64; 1];
-        let mut reg_72 = [0u64; 1];
-        let mut reg_73 = [0u64; 1];
-        let mut reg_74 = [0u64; 1];
-        let mut reg_75 = [0u64; 1];
-        let mut reg_76 = [0u64; 1];
-        let mut reg_77 = [0u64; 1];
-        let mut reg_78 = [0u64; 1];
-        let mut reg_79 = [0u64; 1];
-        let mut reg_80 = [0u64; 1];
-        let mut reg_81 = [0u64; 1];
-        let mut reg_82 = [0u64; 1];
-        let mut reg_83 = [0u64; 1];
-        let mut reg_84 = [0u64; 1];
-        let mut reg_85 = [0u64; 1];
-        let mut reg_86 = [0u64; 1];
-        let mut reg_87 = [0u64; 1];
-        let mut reg_88 = [0u64; 1];
-        let mut reg_89 = [0u64; 1];
-        let mut reg_90 = [0u64; 1];
-        let mut reg_91 = [0u64; 1];
-        let mut reg_92 = [0u64; 1];
-        let mut reg_93 = [0u64; 1];
-        let mut reg_94 = [0u64; 1];
-        let mut reg_95 = [0u64; 1];
-        let mut reg_96 = [0u64; 1];
-        let mut reg_97 = [0u64; 1];
-        let mut reg_98 = [0u64; 1];
+        let arg_1_scalar = word_to_f64(arg_1_value);
+        let mut reg_60: f64 = 0.0f64;
+        let mut reg_61: f64 = 0.0f64;
+        let mut reg_62: Word = 0u64;
+        let mut reg_63: f64 = 0.0f64;
+        let mut reg_64: Word = 0u64;
+        let mut reg_65: Word = 0u64;
+        let mut reg_66: f64 = 0.0f64;
+        let mut reg_67: f64 = 0.0f64;
+        let mut reg_68: f64 = 0.0f64;
+        let mut reg_69: Word = 0u64;
+        let mut reg_70: f64 = 0.0f64;
+        let mut reg_71: f64 = 0.0f64;
+        let mut reg_72: f64 = 0.0f64;
+        let mut reg_73: f64 = 0.0f64;
+        let mut reg_74: f64 = 0.0f64;
+        let mut reg_75: f64 = 0.0f64;
+        let mut reg_76: f64 = 0.0f64;
+        let mut reg_77: f64 = 0.0f64;
+        let mut reg_78: f64 = 0.0f64;
+        let mut reg_79: f64 = 0.0f64;
+        let mut reg_80: Word = 0u64;
+        let mut reg_81: f64 = 0.0f64;
+        let mut reg_82: f64 = 0.0f64;
+        let mut reg_83: f64 = 0.0f64;
+        let mut reg_84: f64 = 0.0f64;
+        let mut reg_85: f64 = 0.0f64;
+        let mut reg_86: f64 = 0.0f64;
+        let mut reg_87: f64 = 0.0f64;
+        let mut reg_88: f64 = 0.0f64;
+        let mut reg_89: f64 = 0.0f64;
+        let mut reg_90: f64 = 0.0f64;
+        let mut reg_91: Word = 0u64;
+        let mut reg_92: Word = 0u64;
+        let mut reg_93: f64 = 0.0f64;
+        let mut reg_94: f64 = 0.0f64;
+        let mut reg_95: f64 = 0.0f64;
+        let mut reg_96: f64 = 0.0f64;
+        let mut reg_97: f64 = 0.0f64;
+        let mut reg_98: Word = 0u64;
         let mut bb: usize = 0;
         let mut pred_bb: usize = 0;
         loop {
             match bb {
                 0 => {
-                    reg_60 = vec_to_words::<1>(self.memory.load(arg_0[0], 1usize).unwrap()).unwrap();
-                    reg_61 = vec_to_words::<1>(self.memory.load(arg_1[0], 1usize).unwrap()).unwrap();
-                    reg_62[0] = 7u64;
-                    let call_result = self.osc_phasor(reg_60[0], reg_61[0]);
-                    reg_63 = [call_result];
-                    reg_64[0] = self.memory.alloc(1usize);
-                    self.memory.store(reg_64[0], &[reg_63[0]], 1usize).unwrap();
-                    reg_66 = vec_to_words::<1>(self.memory.load(reg_64[0], 1usize).unwrap()).unwrap();
-                    reg_67[0] = f64_to_word(0.25f64);
-                    reg_68[0] = f64_to_word(if word_to_f64(reg_66[0]) < word_to_f64(reg_67[0]) { 1.0 } else { 0.0 });
+                    reg_60 = word_to_f64(self.memory.load(f64_to_word(arg_0_scalar), 1usize).unwrap()[0]);
+                    reg_61 = word_to_f64(self.memory.load(f64_to_word(arg_1_scalar), 1usize).unwrap()[0]);
+                    reg_62 = 7u64;
+                    let call_result = self.osc_phasor(f64_to_word(reg_60), f64_to_word(reg_61));
+                    reg_63 = word_to_f64(call_result);
+                    reg_64 = self.memory.alloc(1usize);
+                    self.memory.store(reg_64, &[f64_to_word(reg_63)], 1usize).unwrap();
+                    reg_66 = word_to_f64(self.memory.load(reg_64, 1usize).unwrap()[0]);
+                    reg_67 = 0.25f64;
+                    reg_68 = if reg_66 < reg_67 { 1.0 } else { 0.0 };
                     pred_bb = 0;
-                    bb = if truthy(reg_68[0]) { 1usize } else { 2usize };
+                    bb = if truthy(f64_to_word(reg_68)) { 1usize } else { 2usize };
                     continue;
                 },
                 1 => {
-                    reg_70 = vec_to_words::<1>(self.memory.load(reg_64[0], 1usize).unwrap()).unwrap();
-                    reg_71[0] = f64_to_word(0.0f64);
-                    reg_72[0] = f64_to_word(1.0f64);
-                    reg_73[0] = f64_to_word(word_to_f64(reg_71[0]) - word_to_f64(reg_72[0]));
-                    reg_74[0] = f64_to_word(word_to_f64(reg_70[0]) * word_to_f64(reg_73[0]));
-                    reg_75[0] = f64_to_word(0.5f64);
-                    reg_76[0] = f64_to_word(word_to_f64(reg_74[0]) + word_to_f64(reg_75[0]));
+                    reg_70 = word_to_f64(self.memory.load(reg_64, 1usize).unwrap()[0]);
+                    reg_71 = 0.0f64;
+                    reg_72 = 1.0f64;
+                    reg_73 = reg_71 - reg_72;
+                    reg_74 = reg_70 * reg_73;
+                    reg_75 = 0.5f64;
+                    reg_76 = reg_74 + reg_75;
                     pred_bb = 1;
                     bb = 6usize;
                     continue;
                 },
                 2 => {
-                    reg_77 = vec_to_words::<1>(self.memory.load(reg_64[0], 1usize).unwrap()).unwrap();
-                    reg_78[0] = f64_to_word(0.75f64);
-                    reg_79[0] = f64_to_word(if word_to_f64(reg_77[0]) > word_to_f64(reg_78[0]) { 1.0 } else { 0.0 });
+                    reg_77 = word_to_f64(self.memory.load(reg_64, 1usize).unwrap()[0]);
+                    reg_78 = 0.75f64;
+                    reg_79 = if reg_77 > reg_78 { 1.0 } else { 0.0 };
                     pred_bb = 2;
-                    bb = if truthy(reg_79[0]) { 3usize } else { 4usize };
+                    bb = if truthy(f64_to_word(reg_79)) { 3usize } else { 4usize };
                     continue;
                     pred_bb = 2;
                     bb = 6usize;
                     continue;
                 },
                 3 => {
-                    reg_81 = vec_to_words::<1>(self.memory.load(reg_64[0], 1usize).unwrap()).unwrap();
-                    reg_82[0] = f64_to_word(0.0f64);
-                    reg_83[0] = f64_to_word(1.0f64);
-                    reg_84[0] = f64_to_word(word_to_f64(reg_82[0]) - word_to_f64(reg_83[0]));
-                    reg_85[0] = f64_to_word(word_to_f64(reg_81[0]) * word_to_f64(reg_84[0]));
-                    reg_86[0] = f64_to_word(1.5f64);
-                    reg_87[0] = f64_to_word(word_to_f64(reg_85[0]) + word_to_f64(reg_86[0]));
+                    reg_81 = word_to_f64(self.memory.load(reg_64, 1usize).unwrap()[0]);
+                    reg_82 = 0.0f64;
+                    reg_83 = 1.0f64;
+                    reg_84 = reg_82 - reg_83;
+                    reg_85 = reg_81 * reg_84;
+                    reg_86 = 1.5f64;
+                    reg_87 = reg_85 + reg_86;
                     pred_bb = 3;
                     bb = 5usize;
                     continue;
                 },
                 4 => {
-                    reg_88 = vec_to_words::<1>(self.memory.load(reg_64[0], 1usize).unwrap()).unwrap();
+                    reg_88 = word_to_f64(self.memory.load(reg_64, 1usize).unwrap()[0]);
                     pred_bb = 4;
                     bb = 5usize;
                     continue;
@@ -1300,14 +1312,14 @@ impl<H: MimiumHost> MimiumProgram<H> {
                     } else {
                         panic!("{}", format!("phi predecessor mismatch in block 6: {}", pred_bb));
                     }
-                    reg_91[0] = self.memory.alloc(1usize);
-                    self.memory.store(reg_91[0], &[reg_90[0]], 1usize).unwrap();
-                    reg_93 = vec_to_words::<1>(self.memory.load(reg_91[0], 1usize).unwrap()).unwrap();
-                    reg_94[0] = f64_to_word(0.5f64);
-                    reg_95[0] = f64_to_word(word_to_f64(reg_93[0]) - word_to_f64(reg_94[0]));
-                    reg_96[0] = f64_to_word(4.0f64);
-                    reg_97[0] = f64_to_word(word_to_f64(reg_95[0]) * word_to_f64(reg_96[0]));
-                    return reg_97[0];
+                    reg_91 = self.memory.alloc(1usize);
+                    self.memory.store(reg_91, &[f64_to_word(reg_90)], 1usize).unwrap();
+                    reg_93 = word_to_f64(self.memory.load(reg_91, 1usize).unwrap()[0]);
+                    reg_94 = 0.5f64;
+                    reg_95 = reg_93 - reg_94;
+                    reg_96 = 4.0f64;
+                    reg_97 = reg_95 * reg_96;
+                    return f64_to_word(reg_97);
                 },
                 _ => panic!("{}", format!("invalid basic block {} in function 13", bb)),
             }
@@ -1322,10 +1334,10 @@ impl<H: MimiumHost> MimiumProgram<H> {
 
     #[inline(always)]
     fn __default_13_phase(&mut self) -> Word {
-        let mut reg_58 = [0u64; 1];
-        let mut reg_59 = [0u64; 1];
-        reg_58[0] = f64_to_word(0.0f64);
-        return reg_58[0];
+        let mut reg_58: f64 = 0.0f64;
+        let mut reg_59: Word = 0u64;
+        reg_58 = 0.0f64;
+        return f64_to_word(reg_58);
     }
 
     fn dispatch_osc_lftri(&mut self, args: &[Word]) -> Vec<Word> {
@@ -1343,26 +1355,28 @@ impl<H: MimiumHost> MimiumProgram<H> {
     #[inline(always)]
     fn osc_lftri(&mut self, arg_0_value: Word, arg_1_value: Word) -> Word {
         let arg_0 = [arg_0_value];
+        let arg_0_scalar = word_to_f64(arg_0_value);
         let arg_1 = [arg_1_value];
-        let mut reg_101 = [0u64; 1];
-        let mut reg_102 = [0u64; 1];
-        let mut reg_103 = [0u64; 1];
-        let mut reg_104 = [0u64; 1];
-        let mut reg_105 = [0u64; 1];
-        let mut reg_106 = [0u64; 1];
-        let mut reg_107 = [0u64; 1];
-        let mut reg_108 = [0u64; 1];
-        let mut reg_109 = [0u64; 1];
-        reg_101 = vec_to_words::<1>(self.memory.load(arg_0[0], 1usize).unwrap()).unwrap();
-        reg_102 = vec_to_words::<1>(self.memory.load(arg_1[0], 1usize).unwrap()).unwrap();
-        reg_103[0] = 13u64;
-        let call_result = self.osc_tri(reg_101[0], reg_102[0]);
-        reg_104 = [call_result];
-        reg_105[0] = f64_to_word(0.5f64);
-        reg_106[0] = f64_to_word(word_to_f64(reg_104[0]) * word_to_f64(reg_105[0]));
-        reg_107[0] = f64_to_word(0.5f64);
-        reg_108[0] = f64_to_word(word_to_f64(reg_106[0]) + word_to_f64(reg_107[0]));
-        return reg_108[0];
+        let arg_1_scalar = word_to_f64(arg_1_value);
+        let mut reg_101: f64 = 0.0f64;
+        let mut reg_102: f64 = 0.0f64;
+        let mut reg_103: Word = 0u64;
+        let mut reg_104: f64 = 0.0f64;
+        let mut reg_105: f64 = 0.0f64;
+        let mut reg_106: f64 = 0.0f64;
+        let mut reg_107: f64 = 0.0f64;
+        let mut reg_108: f64 = 0.0f64;
+        let mut reg_109: Word = 0u64;
+        reg_101 = word_to_f64(self.memory.load(f64_to_word(arg_0_scalar), 1usize).unwrap()[0]);
+        reg_102 = word_to_f64(self.memory.load(f64_to_word(arg_1_scalar), 1usize).unwrap()[0]);
+        reg_103 = 13u64;
+        let call_result = self.osc_tri(f64_to_word(reg_101), f64_to_word(reg_102));
+        reg_104 = word_to_f64(call_result);
+        reg_105 = 0.5f64;
+        reg_106 = reg_104 * reg_105;
+        reg_107 = 0.5f64;
+        reg_108 = reg_106 + reg_107;
+        return f64_to_word(reg_108);
     }
 
     fn dispatch___default_15_phase(&mut self, args: &[Word]) -> Vec<Word> {
@@ -1373,10 +1387,10 @@ impl<H: MimiumHost> MimiumProgram<H> {
 
     #[inline(always)]
     fn __default_15_phase(&mut self) -> Word {
-        let mut reg_99 = [0u64; 1];
-        let mut reg_100 = [0u64; 1];
-        reg_99[0] = f64_to_word(0.0f64);
-        return reg_99[0];
+        let mut reg_99: f64 = 0.0f64;
+        let mut reg_100: Word = 0u64;
+        reg_99 = 0.0f64;
+        return f64_to_word(reg_99);
     }
 
     fn dispatch_osc_rect(&mut self, args: &[Word]) -> Vec<Word> {
@@ -1397,47 +1411,50 @@ impl<H: MimiumHost> MimiumProgram<H> {
     #[inline(always)]
     fn osc_rect(&mut self, arg_0_value: Word, arg_1_value: Word, arg_2_value: Word) -> Word {
         let arg_0 = [arg_0_value];
+        let arg_0_scalar = word_to_f64(arg_0_value);
         let arg_1 = [arg_1_value];
+        let arg_1_scalar = word_to_f64(arg_1_value);
         let arg_2 = [arg_2_value];
-        let mut reg_114 = [0u64; 1];
-        let mut reg_115 = [0u64; 1];
-        let mut reg_116 = [0u64; 1];
-        let mut reg_117 = [0u64; 1];
-        let mut reg_118 = [0u64; 1];
-        let mut reg_119 = [0u64; 1];
-        let mut reg_120 = [0u64; 1];
-        let mut reg_121 = [0u64; 1];
-        let mut reg_122 = [0u64; 1];
-        let mut reg_123 = [0u64; 1];
-        let mut reg_124 = [0u64; 1];
-        let mut reg_125 = [0u64; 1];
-        let mut reg_126 = [0u64; 1];
+        let arg_2_scalar = word_to_f64(arg_2_value);
+        let mut reg_114: f64 = 0.0f64;
+        let mut reg_115: f64 = 0.0f64;
+        let mut reg_116: Word = 0u64;
+        let mut reg_117: f64 = 0.0f64;
+        let mut reg_118: f64 = 0.0f64;
+        let mut reg_119: f64 = 0.0f64;
+        let mut reg_120: Word = 0u64;
+        let mut reg_121: f64 = 0.0f64;
+        let mut reg_122: f64 = 0.0f64;
+        let mut reg_123: f64 = 0.0f64;
+        let mut reg_124: f64 = 0.0f64;
+        let mut reg_125: f64 = 0.0f64;
+        let mut reg_126: Word = 0u64;
         let mut bb: usize = 0;
         let mut pred_bb: usize = 0;
         loop {
             match bb {
                 0 => {
-                    reg_114 = vec_to_words::<1>(self.memory.load(arg_0[0], 1usize).unwrap()).unwrap();
-                    reg_115 = vec_to_words::<1>(self.memory.load(arg_1[0], 1usize).unwrap()).unwrap();
-                    reg_116[0] = 7u64;
-                    let call_result = self.osc_phasor(reg_114[0], reg_115[0]);
-                    reg_117 = [call_result];
-                    reg_118 = vec_to_words::<1>(self.memory.load(arg_2[0], 1usize).unwrap()).unwrap();
-                    reg_119[0] = f64_to_word(if word_to_f64(reg_117[0]) < word_to_f64(reg_118[0]) { 1.0 } else { 0.0 });
+                    reg_114 = word_to_f64(self.memory.load(f64_to_word(arg_0_scalar), 1usize).unwrap()[0]);
+                    reg_115 = word_to_f64(self.memory.load(f64_to_word(arg_1_scalar), 1usize).unwrap()[0]);
+                    reg_116 = 7u64;
+                    let call_result = self.osc_phasor(f64_to_word(reg_114), f64_to_word(reg_115));
+                    reg_117 = word_to_f64(call_result);
+                    reg_118 = word_to_f64(self.memory.load(f64_to_word(arg_2_scalar), 1usize).unwrap()[0]);
+                    reg_119 = if reg_117 < reg_118 { 1.0 } else { 0.0 };
                     pred_bb = 0;
-                    bb = if truthy(reg_119[0]) { 1usize } else { 2usize };
+                    bb = if truthy(f64_to_word(reg_119)) { 1usize } else { 2usize };
                     continue;
                 },
                 1 => {
-                    reg_121[0] = f64_to_word(1.0f64);
+                    reg_121 = 1.0f64;
                     pred_bb = 1;
                     bb = 3usize;
                     continue;
                 },
                 2 => {
-                    reg_122[0] = f64_to_word(0.0f64);
-                    reg_123[0] = f64_to_word(1.0f64);
-                    reg_124[0] = f64_to_word(word_to_f64(reg_122[0]) - word_to_f64(reg_123[0]));
+                    reg_122 = 0.0f64;
+                    reg_123 = 1.0f64;
+                    reg_124 = reg_122 - reg_123;
                     pred_bb = 2;
                     bb = 3usize;
                     continue;
@@ -1450,7 +1467,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
                     } else {
                         panic!("{}", format!("phi predecessor mismatch in block 3: {}", pred_bb));
                     }
-                    return reg_125[0];
+                    return f64_to_word(reg_125);
                 },
                 _ => panic!("{}", format!("invalid basic block {} in function 17", bb)),
             }
@@ -1465,10 +1482,10 @@ impl<H: MimiumHost> MimiumProgram<H> {
 
     #[inline(always)]
     fn __default_17_phase(&mut self) -> Word {
-        let mut reg_110 = [0u64; 1];
-        let mut reg_111 = [0u64; 1];
-        reg_110[0] = f64_to_word(0.0f64);
-        return reg_110[0];
+        let mut reg_110: f64 = 0.0f64;
+        let mut reg_111: Word = 0u64;
+        reg_110 = 0.0f64;
+        return f64_to_word(reg_110);
     }
 
     fn dispatch___default_17_duty(&mut self, args: &[Word]) -> Vec<Word> {
@@ -1479,10 +1496,10 @@ impl<H: MimiumHost> MimiumProgram<H> {
 
     #[inline(always)]
     fn __default_17_duty(&mut self) -> Word {
-        let mut reg_112 = [0u64; 1];
-        let mut reg_113 = [0u64; 1];
-        reg_112[0] = f64_to_word(0.5f64);
-        return reg_112[0];
+        let mut reg_112: f64 = 0.0f64;
+        let mut reg_113: Word = 0u64;
+        reg_112 = 0.5f64;
+        return f64_to_word(reg_112);
     }
 
     fn dispatch_osc_lfrect(&mut self, args: &[Word]) -> Vec<Word> {
@@ -1503,43 +1520,46 @@ impl<H: MimiumHost> MimiumProgram<H> {
     #[inline(always)]
     fn osc_lfrect(&mut self, arg_0_value: Word, arg_1_value: Word, arg_2_value: Word) -> Word {
         let arg_0 = [arg_0_value];
+        let arg_0_scalar = word_to_f64(arg_0_value);
         let arg_1 = [arg_1_value];
+        let arg_1_scalar = word_to_f64(arg_1_value);
         let arg_2 = [arg_2_value];
-        let mut reg_131 = [0u64; 1];
-        let mut reg_132 = [0u64; 1];
-        let mut reg_133 = [0u64; 1];
-        let mut reg_134 = [0u64; 1];
-        let mut reg_135 = [0u64; 1];
-        let mut reg_136 = [0u64; 1];
-        let mut reg_137 = [0u64; 1];
-        let mut reg_138 = [0u64; 1];
-        let mut reg_139 = [0u64; 1];
-        let mut reg_140 = [0u64; 1];
-        let mut reg_141 = [0u64; 1];
+        let arg_2_scalar = word_to_f64(arg_2_value);
+        let mut reg_131: f64 = 0.0f64;
+        let mut reg_132: f64 = 0.0f64;
+        let mut reg_133: Word = 0u64;
+        let mut reg_134: f64 = 0.0f64;
+        let mut reg_135: f64 = 0.0f64;
+        let mut reg_136: f64 = 0.0f64;
+        let mut reg_137: Word = 0u64;
+        let mut reg_138: f64 = 0.0f64;
+        let mut reg_139: f64 = 0.0f64;
+        let mut reg_140: f64 = 0.0f64;
+        let mut reg_141: Word = 0u64;
         let mut bb: usize = 0;
         let mut pred_bb: usize = 0;
         loop {
             match bb {
                 0 => {
-                    reg_131 = vec_to_words::<1>(self.memory.load(arg_0[0], 1usize).unwrap()).unwrap();
-                    reg_132 = vec_to_words::<1>(self.memory.load(arg_1[0], 1usize).unwrap()).unwrap();
-                    reg_133[0] = 7u64;
-                    let call_result = self.osc_phasor(reg_131[0], reg_132[0]);
-                    reg_134 = [call_result];
-                    reg_135 = vec_to_words::<1>(self.memory.load(arg_2[0], 1usize).unwrap()).unwrap();
-                    reg_136[0] = f64_to_word(if word_to_f64(reg_134[0]) < word_to_f64(reg_135[0]) { 1.0 } else { 0.0 });
+                    reg_131 = word_to_f64(self.memory.load(f64_to_word(arg_0_scalar), 1usize).unwrap()[0]);
+                    reg_132 = word_to_f64(self.memory.load(f64_to_word(arg_1_scalar), 1usize).unwrap()[0]);
+                    reg_133 = 7u64;
+                    let call_result = self.osc_phasor(f64_to_word(reg_131), f64_to_word(reg_132));
+                    reg_134 = word_to_f64(call_result);
+                    reg_135 = word_to_f64(self.memory.load(f64_to_word(arg_2_scalar), 1usize).unwrap()[0]);
+                    reg_136 = if reg_134 < reg_135 { 1.0 } else { 0.0 };
                     pred_bb = 0;
-                    bb = if truthy(reg_136[0]) { 1usize } else { 2usize };
+                    bb = if truthy(f64_to_word(reg_136)) { 1usize } else { 2usize };
                     continue;
                 },
                 1 => {
-                    reg_138[0] = f64_to_word(1.0f64);
+                    reg_138 = 1.0f64;
                     pred_bb = 1;
                     bb = 3usize;
                     continue;
                 },
                 2 => {
-                    reg_139[0] = f64_to_word(0.0f64);
+                    reg_139 = 0.0f64;
                     pred_bb = 2;
                     bb = 3usize;
                     continue;
@@ -1552,7 +1572,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
                     } else {
                         panic!("{}", format!("phi predecessor mismatch in block 3: {}", pred_bb));
                     }
-                    return reg_140[0];
+                    return f64_to_word(reg_140);
                 },
                 _ => panic!("{}", format!("invalid basic block {} in function 20", bb)),
             }
@@ -1567,10 +1587,10 @@ impl<H: MimiumHost> MimiumProgram<H> {
 
     #[inline(always)]
     fn __default_20_phase(&mut self) -> Word {
-        let mut reg_127 = [0u64; 1];
-        let mut reg_128 = [0u64; 1];
-        reg_127[0] = f64_to_word(0.0f64);
-        return reg_127[0];
+        let mut reg_127: f64 = 0.0f64;
+        let mut reg_128: Word = 0u64;
+        reg_127 = 0.0f64;
+        return f64_to_word(reg_127);
     }
 
     fn dispatch___default_20_duty(&mut self, args: &[Word]) -> Vec<Word> {
@@ -1581,10 +1601,10 @@ impl<H: MimiumHost> MimiumProgram<H> {
 
     #[inline(always)]
     fn __default_20_duty(&mut self) -> Word {
-        let mut reg_129 = [0u64; 1];
-        let mut reg_130 = [0u64; 1];
-        reg_129[0] = f64_to_word(0.5f64);
-        return reg_129[0];
+        let mut reg_129: f64 = 0.0f64;
+        let mut reg_130: Word = 0u64;
+        reg_129 = 0.5f64;
+        return f64_to_word(reg_129);
     }
 
     fn dispatch_osc_sinwave(&mut self, args: &[Word]) -> Vec<Word> {
@@ -1602,31 +1622,33 @@ impl<H: MimiumHost> MimiumProgram<H> {
     #[inline(always)]
     fn osc_sinwave(&mut self, arg_0_value: Word, arg_1_value: Word) -> Word {
         let arg_0 = [arg_0_value];
+        let arg_0_scalar = word_to_f64(arg_0_value);
         let arg_1 = [arg_1_value];
-        let mut reg_144 = [0u64; 1];
-        let mut reg_145 = [0u64; 1];
-        let mut reg_146 = [0u64; 1];
-        let mut reg_147 = [0u64; 1];
-        let mut reg_148 = [0u64; 1];
-        let mut reg_149 = [0u64; 1];
-        let mut reg_150 = [0u64; 1];
-        let mut reg_151 = [0u64; 1];
-        let mut reg_152 = [0u64; 1];
-        let mut reg_153 = [0u64; 1];
-        let mut reg_154 = [0u64; 1];
-        reg_144 = vec_to_words::<1>(self.memory.load(arg_0[0], 1usize).unwrap()).unwrap();
-        reg_145 = vec_to_words::<1>(self.memory.load(arg_1[0], 1usize).unwrap()).unwrap();
-        reg_146[0] = 7u64;
-        let call_result = self.osc_phasor(reg_144[0], reg_145[0]);
-        reg_147 = [call_result];
-        reg_148[0] = f64_to_word(2.0f64);
-        reg_149[0] = f64_to_word(word_to_f64(reg_147[0]) * word_to_f64(reg_148[0]));
-        reg_150[0] = 1u64;
+        let arg_1_scalar = word_to_f64(arg_1_value);
+        let mut reg_144: f64 = 0.0f64;
+        let mut reg_145: f64 = 0.0f64;
+        let mut reg_146: Word = 0u64;
+        let mut reg_147: f64 = 0.0f64;
+        let mut reg_148: f64 = 0.0f64;
+        let mut reg_149: f64 = 0.0f64;
+        let mut reg_150: Word = 0u64;
+        let mut reg_151: f64 = 0.0f64;
+        let mut reg_152: f64 = 0.0f64;
+        let mut reg_153: f64 = 0.0f64;
+        let mut reg_154: Word = 0u64;
+        reg_144 = word_to_f64(self.memory.load(f64_to_word(arg_0_scalar), 1usize).unwrap()[0]);
+        reg_145 = word_to_f64(self.memory.load(f64_to_word(arg_1_scalar), 1usize).unwrap()[0]);
+        reg_146 = 7u64;
+        let call_result = self.osc_phasor(f64_to_word(reg_144), f64_to_word(reg_145));
+        reg_147 = word_to_f64(call_result);
+        reg_148 = 2.0f64;
+        reg_149 = reg_147 * reg_148;
+        reg_150 = 1u64;
         let call_result = self.math_PI();
-        reg_151 = [call_result];
-        reg_152[0] = f64_to_word(word_to_f64(reg_149[0]) * word_to_f64(reg_151[0]));
-        reg_153[0] = f64_to_word(word_to_f64(reg_152[0]).sin());
-        return reg_153[0];
+        reg_151 = word_to_f64(call_result);
+        reg_152 = reg_149 * reg_151;
+        reg_153 = reg_152.sin();
+        return f64_to_word(reg_153);
     }
 
     fn dispatch___default_23_phase(&mut self, args: &[Word]) -> Vec<Word> {
@@ -1637,10 +1659,10 @@ impl<H: MimiumHost> MimiumProgram<H> {
 
     #[inline(always)]
     fn __default_23_phase(&mut self) -> Word {
-        let mut reg_142 = [0u64; 1];
-        let mut reg_143 = [0u64; 1];
-        reg_142[0] = f64_to_word(0.0f64);
-        return reg_142[0];
+        let mut reg_142: f64 = 0.0f64;
+        let mut reg_143: Word = 0u64;
+        reg_142 = 0.0f64;
+        return f64_to_word(reg_142);
     }
 
     fn dispatch_osc_lfsinwave(&mut self, args: &[Word]) -> Vec<Word> {
@@ -1658,26 +1680,28 @@ impl<H: MimiumHost> MimiumProgram<H> {
     #[inline(always)]
     fn osc_lfsinwave(&mut self, arg_0_value: Word, arg_1_value: Word) -> Word {
         let arg_0 = [arg_0_value];
+        let arg_0_scalar = word_to_f64(arg_0_value);
         let arg_1 = [arg_1_value];
-        let mut reg_157 = [0u64; 1];
-        let mut reg_158 = [0u64; 1];
-        let mut reg_159 = [0u64; 1];
-        let mut reg_160 = [0u64; 1];
-        let mut reg_161 = [0u64; 1];
-        let mut reg_162 = [0u64; 1];
-        let mut reg_163 = [0u64; 1];
-        let mut reg_164 = [0u64; 1];
-        let mut reg_165 = [0u64; 1];
-        reg_157 = vec_to_words::<1>(self.memory.load(arg_0[0], 1usize).unwrap()).unwrap();
-        reg_158 = vec_to_words::<1>(self.memory.load(arg_1[0], 1usize).unwrap()).unwrap();
-        reg_159[0] = 23u64;
-        let call_result = self.osc_sinwave(reg_157[0], reg_158[0]);
-        reg_160 = [call_result];
-        reg_161[0] = f64_to_word(0.5f64);
-        reg_162[0] = f64_to_word(word_to_f64(reg_160[0]) * word_to_f64(reg_161[0]));
-        reg_163[0] = f64_to_word(0.5f64);
-        reg_164[0] = f64_to_word(word_to_f64(reg_162[0]) + word_to_f64(reg_163[0]));
-        return reg_164[0];
+        let arg_1_scalar = word_to_f64(arg_1_value);
+        let mut reg_157: f64 = 0.0f64;
+        let mut reg_158: f64 = 0.0f64;
+        let mut reg_159: Word = 0u64;
+        let mut reg_160: f64 = 0.0f64;
+        let mut reg_161: f64 = 0.0f64;
+        let mut reg_162: f64 = 0.0f64;
+        let mut reg_163: f64 = 0.0f64;
+        let mut reg_164: f64 = 0.0f64;
+        let mut reg_165: Word = 0u64;
+        reg_157 = word_to_f64(self.memory.load(f64_to_word(arg_0_scalar), 1usize).unwrap()[0]);
+        reg_158 = word_to_f64(self.memory.load(f64_to_word(arg_1_scalar), 1usize).unwrap()[0]);
+        reg_159 = 23u64;
+        let call_result = self.osc_sinwave(f64_to_word(reg_157), f64_to_word(reg_158));
+        reg_160 = word_to_f64(call_result);
+        reg_161 = 0.5f64;
+        reg_162 = reg_160 * reg_161;
+        reg_163 = 0.5f64;
+        reg_164 = reg_162 + reg_163;
+        return f64_to_word(reg_164);
     }
 
     fn dispatch___default_25_phase(&mut self, args: &[Word]) -> Vec<Word> {
@@ -1688,10 +1712,10 @@ impl<H: MimiumHost> MimiumProgram<H> {
 
     #[inline(always)]
     fn __default_25_phase(&mut self) -> Word {
-        let mut reg_155 = [0u64; 1];
-        let mut reg_156 = [0u64; 1];
-        reg_155[0] = f64_to_word(0.0f64);
-        return reg_155[0];
+        let mut reg_155: f64 = 0.0f64;
+        let mut reg_156: Word = 0u64;
+        reg_155 = 0.0f64;
+        return f64_to_word(reg_155);
     }
 
     fn dispatch_osc(&mut self, args: &[Word]) -> Vec<Word> {
@@ -1706,17 +1730,18 @@ impl<H: MimiumHost> MimiumProgram<H> {
     #[inline(always)]
     fn osc(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
-        let mut reg_166 = [0u64; 1];
-        let mut reg_167 = [0u64; 1];
-        let mut reg_168 = [0u64; 1];
-        let mut reg_169 = [0u64; 1];
-        let mut reg_170 = [0u64; 1];
-        reg_166 = vec_to_words::<1>(self.memory.load(arg_0[0], 1usize).unwrap()).unwrap();
-        reg_167[0] = f64_to_word(0.0f64);
-        reg_168[0] = 23u64;
-        let call_result = self.osc_sinwave(reg_166[0], reg_167[0]);
-        reg_169 = [call_result];
-        return reg_169[0];
+        let arg_0_scalar = word_to_f64(arg_0_value);
+        let mut reg_166: f64 = 0.0f64;
+        let mut reg_167: f64 = 0.0f64;
+        let mut reg_168: Word = 0u64;
+        let mut reg_169: f64 = 0.0f64;
+        let mut reg_170: Word = 0u64;
+        reg_166 = word_to_f64(self.memory.load(f64_to_word(arg_0_scalar), 1usize).unwrap()[0]);
+        reg_167 = 0.0f64;
+        reg_168 = 23u64;
+        let call_result = self.osc_sinwave(f64_to_word(reg_166), f64_to_word(reg_167));
+        reg_169 = word_to_f64(call_result);
+        return f64_to_word(reg_169);
     }
 
     fn dispatch_dsp(&mut self, args: &[Word]) -> Vec<Word> {
@@ -1730,39 +1755,39 @@ impl<H: MimiumHost> MimiumProgram<H> {
 
     #[inline(always)]
     fn dsp(&mut self) -> (Word, Word) {
-        let mut reg_171 = [0u64; 1];
-        let mut reg_172 = [0u64; 1];
-        let mut reg_173 = [0u64; 1];
-        let mut reg_308 = [0u64; 1];
-        let mut reg_309 = [0u64; 1];
-        let mut reg_310 = [0u64; 1];
-        let mut reg_311 = [0u64; 1];
-        let mut reg_312 = [0u64; 1];
-        let mut reg_313 = [0u64; 1];
-        let mut reg_314 = [0u64; 1];
-        let mut reg_315 = [0u64; 1];
-        let mut reg_316 = [0u64; 1];
-        let mut reg_317 = [0u64; 1];
-        let mut reg_318 = [0u64; 1];
-        let mut reg_319 = [0u64; 1];
-        let mut reg_320 = [0u64; 2];
-        reg_171[0] = f64_to_word(50.0f64);
-        reg_172[0] = self.memory.alloc(1usize);
-        self.memory.store(reg_172[0], &[reg_171[0]], 1usize).unwrap();
-        reg_308 = vec_to_words::<1>(self.memory.load(reg_172[0], 1usize).unwrap()).unwrap();
-        reg_309[0] = 29u64;
-        let call_result = self.r(reg_308[0]);
-        reg_310 = [call_result];
-        reg_311[0] = self.memory.alloc(1usize);
-        self.memory.store(reg_311[0], &[reg_310[0]], 1usize).unwrap();
-        reg_313[0] = self.memory.alloc(2usize);
-        reg_314 = vec_to_words::<1>(self.memory.load(reg_311[0], 1usize).unwrap()).unwrap();
-        reg_315[0] = self.memory.get_element(reg_313[0], 0usize).unwrap();
-        self.memory.store(reg_315[0], &[reg_314[0]], 1usize).unwrap();
-        reg_317 = vec_to_words::<1>(self.memory.load(reg_311[0], 1usize).unwrap()).unwrap();
-        reg_318[0] = self.memory.get_element(reg_313[0], 1usize).unwrap();
-        self.memory.store(reg_318[0], &[reg_317[0]], 1usize).unwrap();
-        return ({ let words = self.memory.load(reg_313[0], 2usize).unwrap(); (words[0], words[1]) });
+        let mut reg_171: f64 = 0.0f64;
+        let mut reg_172: Word = 0u64;
+        let mut reg_173: Word = 0u64;
+        let mut reg_308: f64 = 0.0f64;
+        let mut reg_309: Word = 0u64;
+        let mut reg_310: f64 = 0.0f64;
+        let mut reg_311: Word = 0u64;
+        let mut reg_312: Word = 0u64;
+        let mut reg_313: Word = 0u64;
+        let mut reg_314: f64 = 0.0f64;
+        let mut reg_315: Word = 0u64;
+        let mut reg_316: Word = 0u64;
+        let mut reg_317: f64 = 0.0f64;
+        let mut reg_318: Word = 0u64;
+        let mut reg_319: Word = 0u64;
+        let mut reg_320: Word = 0u64;
+        reg_171 = 50.0f64;
+        reg_172 = self.memory.alloc(1usize);
+        self.memory.store(reg_172, &[f64_to_word(reg_171)], 1usize).unwrap();
+        reg_308 = word_to_f64(self.memory.load(reg_172, 1usize).unwrap()[0]);
+        reg_309 = 29u64;
+        let call_result = self.r(f64_to_word(reg_308));
+        reg_310 = word_to_f64(call_result);
+        reg_311 = self.memory.alloc(1usize);
+        self.memory.store(reg_311, &[f64_to_word(reg_310)], 1usize).unwrap();
+        reg_313 = self.memory.alloc(2usize);
+        reg_314 = word_to_f64(self.memory.load(reg_311, 1usize).unwrap()[0]);
+        reg_315 = self.memory.get_element(reg_313, 0usize).unwrap();
+        self.memory.store(reg_315, &[f64_to_word(reg_314)], 1usize).unwrap();
+        reg_317 = word_to_f64(self.memory.load(reg_311, 1usize).unwrap()[0]);
+        reg_318 = self.memory.get_element(reg_313, 1usize).unwrap();
+        self.memory.store(reg_318, &[f64_to_word(reg_317)], 1usize).unwrap();
+        return ({ let words = self.memory.load(reg_313, 2usize).unwrap(); (words[0], words[1]) });
     }
 
     fn dispatch_r(&mut self, args: &[Word]) -> Vec<Word> {
@@ -1777,35 +1802,36 @@ impl<H: MimiumHost> MimiumProgram<H> {
     #[inline(always)]
     fn r(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
-        let mut reg_174 = [0u64; 1];
-        let mut reg_175 = [0u64; 1];
-        let mut reg_176 = [0u64; 1];
-        let mut reg_177 = [0u64; 1];
-        let mut reg_178 = [0u64; 1];
-        let mut reg_179 = [0u64; 1];
-        let mut reg_180 = [0u64; 1];
-        let mut reg_302 = [0u64; 1];
-        let mut reg_303 = [0u64; 1];
-        let mut reg_304 = [0u64; 1];
-        let mut reg_305 = [0u64; 1];
-        let mut reg_306 = [0u64; 1];
-        let mut reg_307 = [0u64; 1];
-        reg_174 = vec_to_words::<1>(self.memory.load(arg_0[0], 1usize).unwrap()).unwrap();
-        reg_175[0] = f64_to_word(10.0f64);
-        reg_176[0] = f64_to_word(word_to_f64(reg_174[0]) * word_to_f64(reg_175[0]));
-        reg_177[0] = 27u64;
-        let call_result = self.osc(reg_176[0]);
-        reg_178 = [call_result];
-        reg_179[0] = f64_to_word(10.0f64);
-        reg_180[0] = f64_to_word(word_to_f64(reg_178[0]) / word_to_f64(reg_179[0]));
-        reg_302[0] = 30u64;
+        let arg_0_scalar = word_to_f64(arg_0_value);
+        let mut reg_174: f64 = 0.0f64;
+        let mut reg_175: f64 = 0.0f64;
+        let mut reg_176: f64 = 0.0f64;
+        let mut reg_177: Word = 0u64;
+        let mut reg_178: f64 = 0.0f64;
+        let mut reg_179: f64 = 0.0f64;
+        let mut reg_180: f64 = 0.0f64;
+        let mut reg_302: Word = 0u64;
+        let mut reg_303: Word = 0u64;
+        let mut reg_304: Word = 0u64;
+        let mut reg_305: Word = 0u64;
+        let mut reg_306: f64 = 0.0f64;
+        let mut reg_307: Word = 0u64;
+        reg_174 = word_to_f64(self.memory.load(f64_to_word(arg_0_scalar), 1usize).unwrap()[0]);
+        reg_175 = 10.0f64;
+        reg_176 = reg_174 * reg_175;
+        reg_177 = 27u64;
+        let call_result = self.osc(f64_to_word(reg_176));
+        reg_178 = word_to_f64(call_result);
+        reg_179 = 10.0f64;
+        reg_180 = reg_178 / reg_179;
+        reg_302 = 30u64;
         let mut closure_upvalues = Vec::new();
         let mut closure_indirect = Vec::new();
-        reg_303[0] = self.closures.alloc(reg_302[0], closure_upvalues, closure_indirect, 1usize).unwrap();
-        reg_304[0] = reg_303[0];
-        reg_305[0] = reg_303[0];
-        reg_306[0] = f64_to_word(word_to_f64(reg_180[0]) + word_to_f64(reg_303[0]));
-        return reg_306[0];
+        reg_303 = self.closures.alloc(reg_302, closure_upvalues, closure_indirect, 1usize).unwrap();
+        reg_304 = reg_303;
+        reg_305 = reg_303;
+        reg_306 = reg_180 + word_to_f64(reg_303);
+        return f64_to_word(reg_306);
     }
 
     fn dispatch_lambda_0(&mut self, args: &[Word]) -> Vec<Word> {
@@ -1820,35 +1846,36 @@ impl<H: MimiumHost> MimiumProgram<H> {
     #[inline(always)]
     fn lambda_0(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
-        let mut reg_181 = [0u64; 1];
-        let mut reg_182 = [0u64; 1];
-        let mut reg_183 = [0u64; 1];
-        let mut reg_184 = [0u64; 1];
-        let mut reg_185 = [0u64; 1];
-        let mut reg_186 = [0u64; 1];
-        let mut reg_187 = [0u64; 1];
-        let mut reg_296 = [0u64; 1];
-        let mut reg_297 = [0u64; 1];
-        let mut reg_298 = [0u64; 1];
-        let mut reg_299 = [0u64; 1];
-        let mut reg_300 = [0u64; 1];
-        let mut reg_301 = [0u64; 1];
-        reg_181 = vec_to_words::<1>(self.memory.load(arg_0[0], 1usize).unwrap()).unwrap();
-        reg_182[0] = f64_to_word(9.0f64);
-        reg_183[0] = f64_to_word(word_to_f64(reg_181[0]) * word_to_f64(reg_182[0]));
-        reg_184[0] = 27u64;
-        let call_result = self.osc(reg_183[0]);
-        reg_185 = [call_result];
-        reg_186[0] = f64_to_word(9.0f64);
-        reg_187[0] = f64_to_word(word_to_f64(reg_185[0]) / word_to_f64(reg_186[0]));
-        reg_296[0] = 31u64;
+        let arg_0_scalar = word_to_f64(arg_0_value);
+        let mut reg_181: f64 = 0.0f64;
+        let mut reg_182: f64 = 0.0f64;
+        let mut reg_183: f64 = 0.0f64;
+        let mut reg_184: Word = 0u64;
+        let mut reg_185: f64 = 0.0f64;
+        let mut reg_186: f64 = 0.0f64;
+        let mut reg_187: f64 = 0.0f64;
+        let mut reg_296: Word = 0u64;
+        let mut reg_297: Word = 0u64;
+        let mut reg_298: Word = 0u64;
+        let mut reg_299: Word = 0u64;
+        let mut reg_300: f64 = 0.0f64;
+        let mut reg_301: Word = 0u64;
+        reg_181 = word_to_f64(self.memory.load(f64_to_word(arg_0_scalar), 1usize).unwrap()[0]);
+        reg_182 = 9.0f64;
+        reg_183 = reg_181 * reg_182;
+        reg_184 = 27u64;
+        let call_result = self.osc(f64_to_word(reg_183));
+        reg_185 = word_to_f64(call_result);
+        reg_186 = 9.0f64;
+        reg_187 = reg_185 / reg_186;
+        reg_296 = 31u64;
         let mut closure_upvalues = Vec::new();
         let mut closure_indirect = Vec::new();
-        reg_297[0] = self.closures.alloc(reg_296[0], closure_upvalues, closure_indirect, 1usize).unwrap();
-        reg_298[0] = reg_297[0];
-        reg_299[0] = reg_297[0];
-        reg_300[0] = f64_to_word(word_to_f64(reg_187[0]) + word_to_f64(reg_297[0]));
-        return reg_300[0];
+        reg_297 = self.closures.alloc(reg_296, closure_upvalues, closure_indirect, 1usize).unwrap();
+        reg_298 = reg_297;
+        reg_299 = reg_297;
+        reg_300 = reg_187 + word_to_f64(reg_297);
+        return f64_to_word(reg_300);
     }
 
     fn dispatch_lambda_1(&mut self, args: &[Word]) -> Vec<Word> {
@@ -1863,35 +1890,36 @@ impl<H: MimiumHost> MimiumProgram<H> {
     #[inline(always)]
     fn lambda_1(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
-        let mut reg_188 = [0u64; 1];
-        let mut reg_189 = [0u64; 1];
-        let mut reg_190 = [0u64; 1];
-        let mut reg_191 = [0u64; 1];
-        let mut reg_192 = [0u64; 1];
-        let mut reg_193 = [0u64; 1];
-        let mut reg_194 = [0u64; 1];
-        let mut reg_290 = [0u64; 1];
-        let mut reg_291 = [0u64; 1];
-        let mut reg_292 = [0u64; 1];
-        let mut reg_293 = [0u64; 1];
-        let mut reg_294 = [0u64; 1];
-        let mut reg_295 = [0u64; 1];
-        reg_188 = vec_to_words::<1>(self.memory.load(arg_0[0], 1usize).unwrap()).unwrap();
-        reg_189[0] = f64_to_word(8.0f64);
-        reg_190[0] = f64_to_word(word_to_f64(reg_188[0]) * word_to_f64(reg_189[0]));
-        reg_191[0] = 27u64;
-        let call_result = self.osc(reg_190[0]);
-        reg_192 = [call_result];
-        reg_193[0] = f64_to_word(8.0f64);
-        reg_194[0] = f64_to_word(word_to_f64(reg_192[0]) / word_to_f64(reg_193[0]));
-        reg_290[0] = 32u64;
+        let arg_0_scalar = word_to_f64(arg_0_value);
+        let mut reg_188: f64 = 0.0f64;
+        let mut reg_189: f64 = 0.0f64;
+        let mut reg_190: f64 = 0.0f64;
+        let mut reg_191: Word = 0u64;
+        let mut reg_192: f64 = 0.0f64;
+        let mut reg_193: f64 = 0.0f64;
+        let mut reg_194: f64 = 0.0f64;
+        let mut reg_290: Word = 0u64;
+        let mut reg_291: Word = 0u64;
+        let mut reg_292: Word = 0u64;
+        let mut reg_293: Word = 0u64;
+        let mut reg_294: f64 = 0.0f64;
+        let mut reg_295: Word = 0u64;
+        reg_188 = word_to_f64(self.memory.load(f64_to_word(arg_0_scalar), 1usize).unwrap()[0]);
+        reg_189 = 8.0f64;
+        reg_190 = reg_188 * reg_189;
+        reg_191 = 27u64;
+        let call_result = self.osc(f64_to_word(reg_190));
+        reg_192 = word_to_f64(call_result);
+        reg_193 = 8.0f64;
+        reg_194 = reg_192 / reg_193;
+        reg_290 = 32u64;
         let mut closure_upvalues = Vec::new();
         let mut closure_indirect = Vec::new();
-        reg_291[0] = self.closures.alloc(reg_290[0], closure_upvalues, closure_indirect, 1usize).unwrap();
-        reg_292[0] = reg_291[0];
-        reg_293[0] = reg_291[0];
-        reg_294[0] = f64_to_word(word_to_f64(reg_194[0]) + word_to_f64(reg_291[0]));
-        return reg_294[0];
+        reg_291 = self.closures.alloc(reg_290, closure_upvalues, closure_indirect, 1usize).unwrap();
+        reg_292 = reg_291;
+        reg_293 = reg_291;
+        reg_294 = reg_194 + word_to_f64(reg_291);
+        return f64_to_word(reg_294);
     }
 
     fn dispatch_lambda_2(&mut self, args: &[Word]) -> Vec<Word> {
@@ -1906,35 +1934,36 @@ impl<H: MimiumHost> MimiumProgram<H> {
     #[inline(always)]
     fn lambda_2(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
-        let mut reg_195 = [0u64; 1];
-        let mut reg_196 = [0u64; 1];
-        let mut reg_197 = [0u64; 1];
-        let mut reg_198 = [0u64; 1];
-        let mut reg_199 = [0u64; 1];
-        let mut reg_200 = [0u64; 1];
-        let mut reg_201 = [0u64; 1];
-        let mut reg_284 = [0u64; 1];
-        let mut reg_285 = [0u64; 1];
-        let mut reg_286 = [0u64; 1];
-        let mut reg_287 = [0u64; 1];
-        let mut reg_288 = [0u64; 1];
-        let mut reg_289 = [0u64; 1];
-        reg_195 = vec_to_words::<1>(self.memory.load(arg_0[0], 1usize).unwrap()).unwrap();
-        reg_196[0] = f64_to_word(7.0f64);
-        reg_197[0] = f64_to_word(word_to_f64(reg_195[0]) * word_to_f64(reg_196[0]));
-        reg_198[0] = 27u64;
-        let call_result = self.osc(reg_197[0]);
-        reg_199 = [call_result];
-        reg_200[0] = f64_to_word(7.0f64);
-        reg_201[0] = f64_to_word(word_to_f64(reg_199[0]) / word_to_f64(reg_200[0]));
-        reg_284[0] = 33u64;
+        let arg_0_scalar = word_to_f64(arg_0_value);
+        let mut reg_195: f64 = 0.0f64;
+        let mut reg_196: f64 = 0.0f64;
+        let mut reg_197: f64 = 0.0f64;
+        let mut reg_198: Word = 0u64;
+        let mut reg_199: f64 = 0.0f64;
+        let mut reg_200: f64 = 0.0f64;
+        let mut reg_201: f64 = 0.0f64;
+        let mut reg_284: Word = 0u64;
+        let mut reg_285: Word = 0u64;
+        let mut reg_286: Word = 0u64;
+        let mut reg_287: Word = 0u64;
+        let mut reg_288: f64 = 0.0f64;
+        let mut reg_289: Word = 0u64;
+        reg_195 = word_to_f64(self.memory.load(f64_to_word(arg_0_scalar), 1usize).unwrap()[0]);
+        reg_196 = 7.0f64;
+        reg_197 = reg_195 * reg_196;
+        reg_198 = 27u64;
+        let call_result = self.osc(f64_to_word(reg_197));
+        reg_199 = word_to_f64(call_result);
+        reg_200 = 7.0f64;
+        reg_201 = reg_199 / reg_200;
+        reg_284 = 33u64;
         let mut closure_upvalues = Vec::new();
         let mut closure_indirect = Vec::new();
-        reg_285[0] = self.closures.alloc(reg_284[0], closure_upvalues, closure_indirect, 1usize).unwrap();
-        reg_286[0] = reg_285[0];
-        reg_287[0] = reg_285[0];
-        reg_288[0] = f64_to_word(word_to_f64(reg_201[0]) + word_to_f64(reg_285[0]));
-        return reg_288[0];
+        reg_285 = self.closures.alloc(reg_284, closure_upvalues, closure_indirect, 1usize).unwrap();
+        reg_286 = reg_285;
+        reg_287 = reg_285;
+        reg_288 = reg_201 + word_to_f64(reg_285);
+        return f64_to_word(reg_288);
     }
 
     fn dispatch_lambda_3(&mut self, args: &[Word]) -> Vec<Word> {
@@ -1949,35 +1978,36 @@ impl<H: MimiumHost> MimiumProgram<H> {
     #[inline(always)]
     fn lambda_3(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
-        let mut reg_202 = [0u64; 1];
-        let mut reg_203 = [0u64; 1];
-        let mut reg_204 = [0u64; 1];
-        let mut reg_205 = [0u64; 1];
-        let mut reg_206 = [0u64; 1];
-        let mut reg_207 = [0u64; 1];
-        let mut reg_208 = [0u64; 1];
-        let mut reg_278 = [0u64; 1];
-        let mut reg_279 = [0u64; 1];
-        let mut reg_280 = [0u64; 1];
-        let mut reg_281 = [0u64; 1];
-        let mut reg_282 = [0u64; 1];
-        let mut reg_283 = [0u64; 1];
-        reg_202 = vec_to_words::<1>(self.memory.load(arg_0[0], 1usize).unwrap()).unwrap();
-        reg_203[0] = f64_to_word(6.0f64);
-        reg_204[0] = f64_to_word(word_to_f64(reg_202[0]) * word_to_f64(reg_203[0]));
-        reg_205[0] = 27u64;
-        let call_result = self.osc(reg_204[0]);
-        reg_206 = [call_result];
-        reg_207[0] = f64_to_word(6.0f64);
-        reg_208[0] = f64_to_word(word_to_f64(reg_206[0]) / word_to_f64(reg_207[0]));
-        reg_278[0] = 34u64;
+        let arg_0_scalar = word_to_f64(arg_0_value);
+        let mut reg_202: f64 = 0.0f64;
+        let mut reg_203: f64 = 0.0f64;
+        let mut reg_204: f64 = 0.0f64;
+        let mut reg_205: Word = 0u64;
+        let mut reg_206: f64 = 0.0f64;
+        let mut reg_207: f64 = 0.0f64;
+        let mut reg_208: f64 = 0.0f64;
+        let mut reg_278: Word = 0u64;
+        let mut reg_279: Word = 0u64;
+        let mut reg_280: Word = 0u64;
+        let mut reg_281: Word = 0u64;
+        let mut reg_282: f64 = 0.0f64;
+        let mut reg_283: Word = 0u64;
+        reg_202 = word_to_f64(self.memory.load(f64_to_word(arg_0_scalar), 1usize).unwrap()[0]);
+        reg_203 = 6.0f64;
+        reg_204 = reg_202 * reg_203;
+        reg_205 = 27u64;
+        let call_result = self.osc(f64_to_word(reg_204));
+        reg_206 = word_to_f64(call_result);
+        reg_207 = 6.0f64;
+        reg_208 = reg_206 / reg_207;
+        reg_278 = 34u64;
         let mut closure_upvalues = Vec::new();
         let mut closure_indirect = Vec::new();
-        reg_279[0] = self.closures.alloc(reg_278[0], closure_upvalues, closure_indirect, 1usize).unwrap();
-        reg_280[0] = reg_279[0];
-        reg_281[0] = reg_279[0];
-        reg_282[0] = f64_to_word(word_to_f64(reg_208[0]) + word_to_f64(reg_279[0]));
-        return reg_282[0];
+        reg_279 = self.closures.alloc(reg_278, closure_upvalues, closure_indirect, 1usize).unwrap();
+        reg_280 = reg_279;
+        reg_281 = reg_279;
+        reg_282 = reg_208 + word_to_f64(reg_279);
+        return f64_to_word(reg_282);
     }
 
     fn dispatch_lambda_4(&mut self, args: &[Word]) -> Vec<Word> {
@@ -1992,35 +2022,36 @@ impl<H: MimiumHost> MimiumProgram<H> {
     #[inline(always)]
     fn lambda_4(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
-        let mut reg_209 = [0u64; 1];
-        let mut reg_210 = [0u64; 1];
-        let mut reg_211 = [0u64; 1];
-        let mut reg_212 = [0u64; 1];
-        let mut reg_213 = [0u64; 1];
-        let mut reg_214 = [0u64; 1];
-        let mut reg_215 = [0u64; 1];
-        let mut reg_272 = [0u64; 1];
-        let mut reg_273 = [0u64; 1];
-        let mut reg_274 = [0u64; 1];
-        let mut reg_275 = [0u64; 1];
-        let mut reg_276 = [0u64; 1];
-        let mut reg_277 = [0u64; 1];
-        reg_209 = vec_to_words::<1>(self.memory.load(arg_0[0], 1usize).unwrap()).unwrap();
-        reg_210[0] = f64_to_word(5.0f64);
-        reg_211[0] = f64_to_word(word_to_f64(reg_209[0]) * word_to_f64(reg_210[0]));
-        reg_212[0] = 27u64;
-        let call_result = self.osc(reg_211[0]);
-        reg_213 = [call_result];
-        reg_214[0] = f64_to_word(5.0f64);
-        reg_215[0] = f64_to_word(word_to_f64(reg_213[0]) / word_to_f64(reg_214[0]));
-        reg_272[0] = 35u64;
+        let arg_0_scalar = word_to_f64(arg_0_value);
+        let mut reg_209: f64 = 0.0f64;
+        let mut reg_210: f64 = 0.0f64;
+        let mut reg_211: f64 = 0.0f64;
+        let mut reg_212: Word = 0u64;
+        let mut reg_213: f64 = 0.0f64;
+        let mut reg_214: f64 = 0.0f64;
+        let mut reg_215: f64 = 0.0f64;
+        let mut reg_272: Word = 0u64;
+        let mut reg_273: Word = 0u64;
+        let mut reg_274: Word = 0u64;
+        let mut reg_275: Word = 0u64;
+        let mut reg_276: f64 = 0.0f64;
+        let mut reg_277: Word = 0u64;
+        reg_209 = word_to_f64(self.memory.load(f64_to_word(arg_0_scalar), 1usize).unwrap()[0]);
+        reg_210 = 5.0f64;
+        reg_211 = reg_209 * reg_210;
+        reg_212 = 27u64;
+        let call_result = self.osc(f64_to_word(reg_211));
+        reg_213 = word_to_f64(call_result);
+        reg_214 = 5.0f64;
+        reg_215 = reg_213 / reg_214;
+        reg_272 = 35u64;
         let mut closure_upvalues = Vec::new();
         let mut closure_indirect = Vec::new();
-        reg_273[0] = self.closures.alloc(reg_272[0], closure_upvalues, closure_indirect, 1usize).unwrap();
-        reg_274[0] = reg_273[0];
-        reg_275[0] = reg_273[0];
-        reg_276[0] = f64_to_word(word_to_f64(reg_215[0]) + word_to_f64(reg_273[0]));
-        return reg_276[0];
+        reg_273 = self.closures.alloc(reg_272, closure_upvalues, closure_indirect, 1usize).unwrap();
+        reg_274 = reg_273;
+        reg_275 = reg_273;
+        reg_276 = reg_215 + word_to_f64(reg_273);
+        return f64_to_word(reg_276);
     }
 
     fn dispatch_lambda_5(&mut self, args: &[Word]) -> Vec<Word> {
@@ -2035,35 +2066,36 @@ impl<H: MimiumHost> MimiumProgram<H> {
     #[inline(always)]
     fn lambda_5(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
-        let mut reg_216 = [0u64; 1];
-        let mut reg_217 = [0u64; 1];
-        let mut reg_218 = [0u64; 1];
-        let mut reg_219 = [0u64; 1];
-        let mut reg_220 = [0u64; 1];
-        let mut reg_221 = [0u64; 1];
-        let mut reg_222 = [0u64; 1];
-        let mut reg_266 = [0u64; 1];
-        let mut reg_267 = [0u64; 1];
-        let mut reg_268 = [0u64; 1];
-        let mut reg_269 = [0u64; 1];
-        let mut reg_270 = [0u64; 1];
-        let mut reg_271 = [0u64; 1];
-        reg_216 = vec_to_words::<1>(self.memory.load(arg_0[0], 1usize).unwrap()).unwrap();
-        reg_217[0] = f64_to_word(4.0f64);
-        reg_218[0] = f64_to_word(word_to_f64(reg_216[0]) * word_to_f64(reg_217[0]));
-        reg_219[0] = 27u64;
-        let call_result = self.osc(reg_218[0]);
-        reg_220 = [call_result];
-        reg_221[0] = f64_to_word(4.0f64);
-        reg_222[0] = f64_to_word(word_to_f64(reg_220[0]) / word_to_f64(reg_221[0]));
-        reg_266[0] = 36u64;
+        let arg_0_scalar = word_to_f64(arg_0_value);
+        let mut reg_216: f64 = 0.0f64;
+        let mut reg_217: f64 = 0.0f64;
+        let mut reg_218: f64 = 0.0f64;
+        let mut reg_219: Word = 0u64;
+        let mut reg_220: f64 = 0.0f64;
+        let mut reg_221: f64 = 0.0f64;
+        let mut reg_222: f64 = 0.0f64;
+        let mut reg_266: Word = 0u64;
+        let mut reg_267: Word = 0u64;
+        let mut reg_268: Word = 0u64;
+        let mut reg_269: Word = 0u64;
+        let mut reg_270: f64 = 0.0f64;
+        let mut reg_271: Word = 0u64;
+        reg_216 = word_to_f64(self.memory.load(f64_to_word(arg_0_scalar), 1usize).unwrap()[0]);
+        reg_217 = 4.0f64;
+        reg_218 = reg_216 * reg_217;
+        reg_219 = 27u64;
+        let call_result = self.osc(f64_to_word(reg_218));
+        reg_220 = word_to_f64(call_result);
+        reg_221 = 4.0f64;
+        reg_222 = reg_220 / reg_221;
+        reg_266 = 36u64;
         let mut closure_upvalues = Vec::new();
         let mut closure_indirect = Vec::new();
-        reg_267[0] = self.closures.alloc(reg_266[0], closure_upvalues, closure_indirect, 1usize).unwrap();
-        reg_268[0] = reg_267[0];
-        reg_269[0] = reg_267[0];
-        reg_270[0] = f64_to_word(word_to_f64(reg_222[0]) + word_to_f64(reg_267[0]));
-        return reg_270[0];
+        reg_267 = self.closures.alloc(reg_266, closure_upvalues, closure_indirect, 1usize).unwrap();
+        reg_268 = reg_267;
+        reg_269 = reg_267;
+        reg_270 = reg_222 + word_to_f64(reg_267);
+        return f64_to_word(reg_270);
     }
 
     fn dispatch_lambda_6(&mut self, args: &[Word]) -> Vec<Word> {
@@ -2078,35 +2110,36 @@ impl<H: MimiumHost> MimiumProgram<H> {
     #[inline(always)]
     fn lambda_6(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
-        let mut reg_223 = [0u64; 1];
-        let mut reg_224 = [0u64; 1];
-        let mut reg_225 = [0u64; 1];
-        let mut reg_226 = [0u64; 1];
-        let mut reg_227 = [0u64; 1];
-        let mut reg_228 = [0u64; 1];
-        let mut reg_229 = [0u64; 1];
-        let mut reg_260 = [0u64; 1];
-        let mut reg_261 = [0u64; 1];
-        let mut reg_262 = [0u64; 1];
-        let mut reg_263 = [0u64; 1];
-        let mut reg_264 = [0u64; 1];
-        let mut reg_265 = [0u64; 1];
-        reg_223 = vec_to_words::<1>(self.memory.load(arg_0[0], 1usize).unwrap()).unwrap();
-        reg_224[0] = f64_to_word(3.0f64);
-        reg_225[0] = f64_to_word(word_to_f64(reg_223[0]) * word_to_f64(reg_224[0]));
-        reg_226[0] = 27u64;
-        let call_result = self.osc(reg_225[0]);
-        reg_227 = [call_result];
-        reg_228[0] = f64_to_word(3.0f64);
-        reg_229[0] = f64_to_word(word_to_f64(reg_227[0]) / word_to_f64(reg_228[0]));
-        reg_260[0] = 37u64;
+        let arg_0_scalar = word_to_f64(arg_0_value);
+        let mut reg_223: f64 = 0.0f64;
+        let mut reg_224: f64 = 0.0f64;
+        let mut reg_225: f64 = 0.0f64;
+        let mut reg_226: Word = 0u64;
+        let mut reg_227: f64 = 0.0f64;
+        let mut reg_228: f64 = 0.0f64;
+        let mut reg_229: f64 = 0.0f64;
+        let mut reg_260: Word = 0u64;
+        let mut reg_261: Word = 0u64;
+        let mut reg_262: Word = 0u64;
+        let mut reg_263: Word = 0u64;
+        let mut reg_264: f64 = 0.0f64;
+        let mut reg_265: Word = 0u64;
+        reg_223 = word_to_f64(self.memory.load(f64_to_word(arg_0_scalar), 1usize).unwrap()[0]);
+        reg_224 = 3.0f64;
+        reg_225 = reg_223 * reg_224;
+        reg_226 = 27u64;
+        let call_result = self.osc(f64_to_word(reg_225));
+        reg_227 = word_to_f64(call_result);
+        reg_228 = 3.0f64;
+        reg_229 = reg_227 / reg_228;
+        reg_260 = 37u64;
         let mut closure_upvalues = Vec::new();
         let mut closure_indirect = Vec::new();
-        reg_261[0] = self.closures.alloc(reg_260[0], closure_upvalues, closure_indirect, 1usize).unwrap();
-        reg_262[0] = reg_261[0];
-        reg_263[0] = reg_261[0];
-        reg_264[0] = f64_to_word(word_to_f64(reg_229[0]) + word_to_f64(reg_261[0]));
-        return reg_264[0];
+        reg_261 = self.closures.alloc(reg_260, closure_upvalues, closure_indirect, 1usize).unwrap();
+        reg_262 = reg_261;
+        reg_263 = reg_261;
+        reg_264 = reg_229 + word_to_f64(reg_261);
+        return f64_to_word(reg_264);
     }
 
     fn dispatch_lambda_7(&mut self, args: &[Word]) -> Vec<Word> {
@@ -2121,35 +2154,36 @@ impl<H: MimiumHost> MimiumProgram<H> {
     #[inline(always)]
     fn lambda_7(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
-        let mut reg_230 = [0u64; 1];
-        let mut reg_231 = [0u64; 1];
-        let mut reg_232 = [0u64; 1];
-        let mut reg_233 = [0u64; 1];
-        let mut reg_234 = [0u64; 1];
-        let mut reg_235 = [0u64; 1];
-        let mut reg_236 = [0u64; 1];
-        let mut reg_254 = [0u64; 1];
-        let mut reg_255 = [0u64; 1];
-        let mut reg_256 = [0u64; 1];
-        let mut reg_257 = [0u64; 1];
-        let mut reg_258 = [0u64; 1];
-        let mut reg_259 = [0u64; 1];
-        reg_230 = vec_to_words::<1>(self.memory.load(arg_0[0], 1usize).unwrap()).unwrap();
-        reg_231[0] = f64_to_word(2.0f64);
-        reg_232[0] = f64_to_word(word_to_f64(reg_230[0]) * word_to_f64(reg_231[0]));
-        reg_233[0] = 27u64;
-        let call_result = self.osc(reg_232[0]);
-        reg_234 = [call_result];
-        reg_235[0] = f64_to_word(2.0f64);
-        reg_236[0] = f64_to_word(word_to_f64(reg_234[0]) / word_to_f64(reg_235[0]));
-        reg_254[0] = 38u64;
+        let arg_0_scalar = word_to_f64(arg_0_value);
+        let mut reg_230: f64 = 0.0f64;
+        let mut reg_231: f64 = 0.0f64;
+        let mut reg_232: f64 = 0.0f64;
+        let mut reg_233: Word = 0u64;
+        let mut reg_234: f64 = 0.0f64;
+        let mut reg_235: f64 = 0.0f64;
+        let mut reg_236: f64 = 0.0f64;
+        let mut reg_254: Word = 0u64;
+        let mut reg_255: Word = 0u64;
+        let mut reg_256: Word = 0u64;
+        let mut reg_257: Word = 0u64;
+        let mut reg_258: f64 = 0.0f64;
+        let mut reg_259: Word = 0u64;
+        reg_230 = word_to_f64(self.memory.load(f64_to_word(arg_0_scalar), 1usize).unwrap()[0]);
+        reg_231 = 2.0f64;
+        reg_232 = reg_230 * reg_231;
+        reg_233 = 27u64;
+        let call_result = self.osc(f64_to_word(reg_232));
+        reg_234 = word_to_f64(call_result);
+        reg_235 = 2.0f64;
+        reg_236 = reg_234 / reg_235;
+        reg_254 = 38u64;
         let mut closure_upvalues = Vec::new();
         let mut closure_indirect = Vec::new();
-        reg_255[0] = self.closures.alloc(reg_254[0], closure_upvalues, closure_indirect, 1usize).unwrap();
-        reg_256[0] = reg_255[0];
-        reg_257[0] = reg_255[0];
-        reg_258[0] = f64_to_word(word_to_f64(reg_236[0]) + word_to_f64(reg_255[0]));
-        return reg_258[0];
+        reg_255 = self.closures.alloc(reg_254, closure_upvalues, closure_indirect, 1usize).unwrap();
+        reg_256 = reg_255;
+        reg_257 = reg_255;
+        reg_258 = reg_236 + word_to_f64(reg_255);
+        return f64_to_word(reg_258);
     }
 
     fn dispatch_lambda_8(&mut self, args: &[Word]) -> Vec<Word> {
@@ -2164,35 +2198,36 @@ impl<H: MimiumHost> MimiumProgram<H> {
     #[inline(always)]
     fn lambda_8(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
-        let mut reg_237 = [0u64; 1];
-        let mut reg_238 = [0u64; 1];
-        let mut reg_239 = [0u64; 1];
-        let mut reg_240 = [0u64; 1];
-        let mut reg_241 = [0u64; 1];
-        let mut reg_242 = [0u64; 1];
-        let mut reg_243 = [0u64; 1];
-        let mut reg_248 = [0u64; 1];
-        let mut reg_249 = [0u64; 1];
-        let mut reg_250 = [0u64; 1];
-        let mut reg_251 = [0u64; 1];
-        let mut reg_252 = [0u64; 1];
-        let mut reg_253 = [0u64; 1];
-        reg_237 = vec_to_words::<1>(self.memory.load(arg_0[0], 1usize).unwrap()).unwrap();
-        reg_238[0] = f64_to_word(1.0f64);
-        reg_239[0] = f64_to_word(word_to_f64(reg_237[0]) * word_to_f64(reg_238[0]));
-        reg_240[0] = 27u64;
-        let call_result = self.osc(reg_239[0]);
-        reg_241 = [call_result];
-        reg_242[0] = f64_to_word(1.0f64);
-        reg_243[0] = f64_to_word(word_to_f64(reg_241[0]) / word_to_f64(reg_242[0]));
-        reg_248[0] = 39u64;
+        let arg_0_scalar = word_to_f64(arg_0_value);
+        let mut reg_237: f64 = 0.0f64;
+        let mut reg_238: f64 = 0.0f64;
+        let mut reg_239: f64 = 0.0f64;
+        let mut reg_240: Word = 0u64;
+        let mut reg_241: f64 = 0.0f64;
+        let mut reg_242: f64 = 0.0f64;
+        let mut reg_243: f64 = 0.0f64;
+        let mut reg_248: Word = 0u64;
+        let mut reg_249: Word = 0u64;
+        let mut reg_250: Word = 0u64;
+        let mut reg_251: Word = 0u64;
+        let mut reg_252: f64 = 0.0f64;
+        let mut reg_253: Word = 0u64;
+        reg_237 = word_to_f64(self.memory.load(f64_to_word(arg_0_scalar), 1usize).unwrap()[0]);
+        reg_238 = 1.0f64;
+        reg_239 = reg_237 * reg_238;
+        reg_240 = 27u64;
+        let call_result = self.osc(f64_to_word(reg_239));
+        reg_241 = word_to_f64(call_result);
+        reg_242 = 1.0f64;
+        reg_243 = reg_241 / reg_242;
+        reg_248 = 39u64;
         let mut closure_upvalues = Vec::new();
         let mut closure_indirect = Vec::new();
-        reg_249[0] = self.closures.alloc(reg_248[0], closure_upvalues, closure_indirect, 1usize).unwrap();
-        reg_250[0] = reg_249[0];
-        reg_251[0] = reg_249[0];
-        reg_252[0] = f64_to_word(word_to_f64(reg_243[0]) + word_to_f64(reg_249[0]));
-        return reg_252[0];
+        reg_249 = self.closures.alloc(reg_248, closure_upvalues, closure_indirect, 1usize).unwrap();
+        reg_250 = reg_249;
+        reg_251 = reg_249;
+        reg_252 = reg_243 + word_to_f64(reg_249);
+        return f64_to_word(reg_252);
     }
 
     fn dispatch_lambda_9(&mut self, args: &[Word]) -> Vec<Word> {
@@ -2207,15 +2242,16 @@ impl<H: MimiumHost> MimiumProgram<H> {
     #[inline(always)]
     fn lambda_9(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
-        let mut reg_244 = [0u64; 1];
-        let mut reg_245 = [0u64; 1];
-        let mut reg_246 = [0u64; 1];
-        let mut reg_247 = [0u64; 1];
-        reg_244 = vec_to_words::<1>(self.memory.load(arg_0[0], 1usize).unwrap()).unwrap();
-        reg_245[0] = 27u64;
-        let call_result = self.osc(reg_244[0]);
-        reg_246 = [call_result];
-        return reg_246[0];
+        let arg_0_scalar = word_to_f64(arg_0_value);
+        let mut reg_244: f64 = 0.0f64;
+        let mut reg_245: Word = 0u64;
+        let mut reg_246: f64 = 0.0f64;
+        let mut reg_247: Word = 0u64;
+        reg_244 = word_to_f64(self.memory.load(f64_to_word(arg_0_scalar), 1usize).unwrap()[0]);
+        reg_245 = 27u64;
+        let call_result = self.osc(f64_to_word(reg_244));
+        reg_246 = word_to_f64(call_result);
+        return f64_to_word(reg_246);
     }
 
 }

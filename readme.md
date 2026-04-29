@@ -17,6 +17,13 @@ test mimium_10_sine_oscillators ... bench:     303,513.67 ns/iter (+/- 42,895.46
 ## Forcing inlining
 
 ```log
-test faust_10_sine_oscillators  ... bench:      18,673.48 ns/iter (+/- 781.63) = 219 MB/s
-test mimium_10_sine_oscillators ... bench:     225,061.12 ns/iter (+/- 37,800.61) = 72 MB/s
+test faust_10_sine_oscillators  ... bench:      18,517.71 ns/iter (+/- 860.10) = 221 MB/s
+test mimium_10_sine_oscillators ... bench:     271,811.46 ns/iter (+/- 25,345.55) = 60 MB/s
+```
+
+## typed register
+
+```log
+test faust_10_sine_oscillators  ... bench:      18,421.41 ns/iter (+/- 1,021.47) = 222 MB/s
+test mimium_10_sine_oscillators ... bench:     267,846.74 ns/iter (+/- 30,923.32) = 61 MB/s
 ```
