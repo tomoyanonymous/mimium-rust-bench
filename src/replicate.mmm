@@ -1,0 +1,27 @@
+//same as cascadeosc.mmm, but written with new multi-stage computation feature.
+use core::*
+use osc::*
+#stage(main)
+let osc = |freq|{
+  sinwave(freq,0.0)
+}
+
+#stage(macro)
+fn replicate (n,gen:`(float)->float)->`(float)->float{
+    if (n>0.0){
+        let gain = n |> lift_f
+        `{|rate| ($gen)(rate*$gain)/$gain + $replicate(n - 1.0 ,gen) }
+    }else{
+        `{|rate| ($gen)(rate)}
+    }
+}
+
+#stage(main)
+
+fn dsp(){
+    let f = 50
+    let r =  (f |> replicate!(10, `osc))
+    (r,r)
+    
+}
+
