@@ -70,15 +70,37 @@ Added `libpd_10_sine_oscillators` benchmark using [libpd-sys](https://crates.io/
 The Pure Data patch (`src/replicate.pd`) uses 10 `osc~` objects at 50–500 Hz (in 50 Hz steps)
 with amplitude scaling 1/n, summed to a single output channel.
 
-> **Note on algorithm**: PD's `osc~` is a cosine wavetable oscillator (512-entry table),
-> whereas Faust and mimium compute `sin()` directly. Wavetable lookup is significantly cheaper
-> than a transcendental function call, which largely explains the speed difference below.
-
 ```log
-test faust_10_sine_oscillators  ... bench:      18,541.49 ns/iter (+/- 1,171.40) = 220 MB/s
-test libpd_10_sine_oscillators  ... bench:      12,684.79 ns/iter (+/-   282.24) = 322 MB/s
-test mimium_10_sine_oscillators ... bench:      50,358.47 ns/iter (+/- 2,419.06) = 325 MB/s
+test faust_10_sine_oscillators  ... bench:      18,473.62 ns/iter (+/- 1,257.81) = 221 MB/s
+test libpd_10_sine_oscillators  ... bench:      16,187.50 ns/iter (+/- 1,151.35) = 253 MB/s
+test mimium_10_sine_oscillators ... bench:      50,399.36 ns/iter (+/- 1,026.78) = 325 MB/s
 ```
 
 The MB/s figures are not directly comparable: Faust and libpd measure mono f32 throughput
 (4 KB/iter), while mimium measures stereo f64 throughput (16 KB/iter).
+
+## changed mimium processing resolution to f32
+
+```log
+test faust_10_sine_oscillators  ... bench:      18,557.24 ns/iter (+/- 1,588.95) = 220 MB/s
+test libpd_10_sine_oscillators  ... bench:      16,634.76 ns/iter (+/- 213.76) = 246 MB/s
+test mimium_10_sine_oscillators ... bench:      43,094.94 ns/iter (+/- 1,101.97) = 380 MB/s
+```
+
+## more memory load elimination
+
+```log
+test faust_10_sine_oscillators  ... bench:      18,484.36 ns/iter (+/- 1,984.58) = 221 MB/s
+test libpd_10_sine_oscillators  ... bench:      16,641.27 ns/iter (+/- 646.23) = 246 MB/s
+test mimium_10_sine_oscillators ... bench:      42,879.91 ns/iter (+/- 1,269.97) = 382 MB/s
+
+```
+
+## state operation condition check removed
+
+
+```log
+test faust_10_sine_oscillators  ... bench:      18,914.39 ns/iter (+/- 1,293.59) = 216 MB/s
+test libpd_10_sine_oscillators  ... bench:      16,599.20 ns/iter (+/- 261.47) = 246 MB/s
+test mimium_10_sine_oscillators ... bench:      33,201.89 ns/iter (+/- 1,018.78) = 493 MB/s
+```

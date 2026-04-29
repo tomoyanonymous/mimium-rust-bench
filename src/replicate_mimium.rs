@@ -1,11 +1,25 @@
 use std::convert::TryInto;
 
 pub type Word = u64;
+pub type mmmfloat = f32;
+
+trait MmmFloatWord: Sized {
+    fn to_word(self) -> Word;
+    fn from_word(word: Word) -> Self;
+}
+impl MmmFloatWord for f64 {
+    #[inline(always)] fn to_word(self) -> Word { self.to_bits() }
+    #[inline(always)] fn from_word(word: Word) -> Self { f64::from_bits(word) }
+}
+impl MmmFloatWord for f32 {
+    #[inline(always)] fn to_word(self) -> Word { self.to_bits() as Word }
+    #[inline(always)] fn from_word(word: Word) -> Self { f32::from_bits(word as u32) }
+}
 
 #[inline(always)]
-fn f64_to_word(value: f64) -> Word { value.to_bits() }
+fn f64_to_word(value: mmmfloat) -> Word { value.to_word() }
 #[inline(always)]
-fn word_to_f64(value: Word) -> f64 { f64::from_bits(value) }
+fn word_to_f64(value: Word) -> mmmfloat { mmmfloat::from_word(value) }
 #[inline(always)]
 fn i64_to_word(value: i64) -> Word { u64::from_ne_bytes(value.to_ne_bytes()) }
 #[inline(always)]
@@ -62,11 +76,11 @@ fn parse_specialized_arity(name: &str, prefix: &str, default: usize) -> Option<u
 pub trait MimiumHost {
     fn call_ext(&mut self, name: &str, args: &[Word], ret_words: usize) -> Result<Vec<Word>, String>;
 
-    fn current_time(&mut self) -> f64 {
+    fn current_time(&mut self) -> mmmfloat {
         0.0
     }
 
-    fn sample_rate(&mut self) -> f64 {
+    fn sample_rate(&mut self) -> mmmfloat {
         48_000.0
     }
 }
@@ -101,12 +115,14 @@ impl StateStorage {
         }
     }
 
+    #[inline(always)]
     fn push_pos(&mut self, offset: usize) {
-        self.pos = self.pos.saturating_add(offset);
+        self.pos += offset;
     }
 
+    #[inline(always)]
     fn pop_pos(&mut self, offset: usize) {
-        self.pos = self.pos.saturating_sub(offset);
+        self.pos -= offset;
     }
 
     fn get_state(&mut self, size: usize) -> Vec<Word> {
@@ -115,26 +131,34 @@ impl StateStorage {
     }
 
     #[inline(always)]
-    fn get_state_word(&mut self) -> Word {
-        self.ensure(1);
-        self.rawdata[self.pos]
+    fn get_state_slice(&self, size: usize) -> &[Word] {
+        debug_assert!(self.pos + size <= self.rawdata.len(), "state read out of bounds: pos={} size={} len={}", self.pos, size, self.rawdata.len());
+        unsafe { self.rawdata.get_unchecked(self.pos..self.pos + size) }
     }
 
+    #[inline(always)]
+    fn get_state_word(&self) -> Word {
+        debug_assert!(self.pos < self.rawdata.len(), "state read out of bounds: pos={} len={}", self.pos, self.rawdata.len());
+        unsafe { *self.rawdata.get_unchecked(self.pos) }
+    }
+
+    #[inline(always)]
     fn set_state(&mut self, src: &[Word], size: usize) {
-        self.ensure(size);
-        self.rawdata[self.pos..self.pos + size].copy_from_slice(&src[..size]);
+        debug_assert!(self.pos + size <= self.rawdata.len(), "state write out of bounds: pos={} size={} len={}", self.pos, size, self.rawdata.len());
+        unsafe { self.rawdata.get_unchecked_mut(self.pos..self.pos + size) }.copy_from_slice(&src[..size]);
     }
 
     #[inline(always)]
     fn set_state_word(&mut self, src: Word) {
-        self.ensure(1);
-        self.rawdata[self.pos] = src;
+        debug_assert!(self.pos < self.rawdata.len(), "state write out of bounds: pos={} len={}", self.pos, self.rawdata.len());
+        unsafe { *self.rawdata.get_unchecked_mut(self.pos) = src; }
     }
 
+    #[inline(always)]
     fn mem(&mut self, src: Word) -> Word {
-        self.ensure(1);
-        let prev = self.rawdata[self.pos];
-        self.rawdata[self.pos] = src;
+        debug_assert!(self.pos < self.rawdata.len(), "mem out of bounds: pos={} len={}", self.pos, self.rawdata.len());
+        let prev = unsafe { *self.rawdata.get_unchecked(self.pos) };
+        unsafe { *self.rawdata.get_unchecked_mut(self.pos) = src; }
         prev
     }
 
@@ -146,7 +170,7 @@ impl StateStorage {
         }
 
         let delay_samples = word_to_f64(time_raw)
-            .clamp(0.0, max_len.saturating_sub(1) as f64) as usize;
+            .clamp(0.0, max_len.saturating_sub(1) as mmmfloat) as usize;
         let read_slot = self.pos;
         let write_slot = self.pos + 1;
         let data_start = self.pos + 2;
@@ -458,7 +482,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         Ok(result)
     }
 
-    pub fn call_dsp_buffer(&mut self, input: &[f64], output: &mut [f64], frames: usize) -> Result<(), String> {
+    pub fn call_dsp_buffer(&mut self, input: &[mmmfloat], output: &mut [mmmfloat], frames: usize) -> Result<(), String> {
         if !input.is_empty() {
             return Err(format!("expected 0 input samples for {} dsp frames, got {}", frames, input.len()));
         }
@@ -485,18 +509,14 @@ impl<H: MimiumHost> MimiumProgram<H> {
         self.call_function_handle_with_memory(handle, args)
     }
 
+    #[inline(always)]
     fn get_current_statestorage(&mut self) -> &mut StateStorage {
         if let Some(&closure_handle) = self.state_storage_stack.last() {
-            &mut self
-                .closures
-                .get_mut(closure_handle)
-                .unwrap_or_else(|err| unreachable!("{err}"))
-                .state_storage
+            let index = unsafe { decode_closure(closure_handle).unwrap_unchecked() };
+            unsafe { &mut self.closures.closures.get_unchecked_mut(index).state_storage }
         } else {
-            let function_index = self
-                .current_function_state
-                .unwrap_or_else(|| unreachable!("missing active function state"));
-            &mut self.function_states[function_index]
+            let function_index = unsafe { self.current_function_state.unwrap_unchecked() };
+            unsafe { self.function_states.get_unchecked_mut(function_index) }
         }
     }
 
@@ -524,7 +544,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
                     Ok(vec![f64_to_word(0.0)])
                 } else {
                     let array = self.arrays.get(handle)?;
-                    Ok(vec![f64_to_word(array.data.len() as f64)])
+                    Ok(vec![f64_to_word(array.data.len() as mmmfloat)])
                 }
             }
             _ if name == "split_head" || name.starts_with("split_head$arity") => {
@@ -928,9 +948,9 @@ impl<H: MimiumHost> MimiumProgram<H> {
 
     #[inline(always)]
     fn math_PI(&mut self) -> Word {
-        let mut reg_0: f64 = 0.0f64;
+        let mut reg_0: mmmfloat = 0.0 as mmmfloat;
         let mut reg_1: Word = 0u64;
-        reg_0 = 3.14159265359f64;
+        reg_0 = 3.14159265359 as mmmfloat;
         return f64_to_word(reg_0);
     }
 
@@ -942,9 +962,9 @@ impl<H: MimiumHost> MimiumProgram<H> {
 
     #[inline(always)]
     fn math_E(&mut self) -> Word {
-        let mut reg_2: f64 = 0.0f64;
+        let mut reg_2: mmmfloat = 0.0 as mmmfloat;
         let mut reg_3: Word = 0u64;
-        reg_2 = 2.71828182846f64;
+        reg_2 = 2.71828182846 as mmmfloat;
         return f64_to_word(reg_2);
     }
 
@@ -962,9 +982,9 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let arg_0 = [arg_0_value];
         let arg_0_scalar = word_to_f64(arg_0_value);
         let mut reg_4: Word = 0u64;
-        let mut reg_5: f64 = 0.0f64;
-        let mut reg_6: f64 = 0.0f64;
-        let mut reg_7: f64 = 0.0f64;
+        let mut reg_5: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_6: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_7: mmmfloat = 0.0 as mmmfloat;
         let mut reg_8: Word = 0u64;
         reg_4 = 2u64;
         let call_result = self.math_E();
@@ -987,15 +1007,15 @@ impl<H: MimiumHost> MimiumProgram<H> {
     fn math_log2(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
         let arg_0_scalar = word_to_f64(arg_0_value);
-        let mut reg_9: f64 = 0.0f64;
-        let mut reg_10: f64 = 0.0f64;
-        let mut reg_11: f64 = 0.0f64;
-        let mut reg_12: f64 = 0.0f64;
-        let mut reg_13: f64 = 0.0f64;
+        let mut reg_9: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_10: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_11: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_12: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_13: mmmfloat = 0.0 as mmmfloat;
         let mut reg_14: Word = 0u64;
         reg_9 = arg_0_scalar;
         reg_10 = reg_9.ln();
-        reg_11 = 2.0f64;
+        reg_11 = 2.0 as mmmfloat;
         reg_12 = reg_11.ln();
         reg_13 = reg_10 / reg_12;
         return f64_to_word(reg_13);
@@ -1014,15 +1034,15 @@ impl<H: MimiumHost> MimiumProgram<H> {
     fn math_log10(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
         let arg_0_scalar = word_to_f64(arg_0_value);
-        let mut reg_15: f64 = 0.0f64;
-        let mut reg_16: f64 = 0.0f64;
-        let mut reg_17: f64 = 0.0f64;
-        let mut reg_18: f64 = 0.0f64;
-        let mut reg_19: f64 = 0.0f64;
+        let mut reg_15: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_16: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_17: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_18: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_19: mmmfloat = 0.0 as mmmfloat;
         let mut reg_20: Word = 0u64;
         reg_15 = arg_0_scalar;
         reg_16 = reg_15.ln();
-        reg_17 = 10.0f64;
+        reg_17 = 10.0 as mmmfloat;
         reg_18 = reg_17.ln();
         reg_19 = reg_16 / reg_18;
         return f64_to_word(reg_19);
@@ -1041,14 +1061,14 @@ impl<H: MimiumHost> MimiumProgram<H> {
     fn osc_phasor_zero(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
         let arg_0_scalar = word_to_f64(arg_0_value);
-        let mut reg_21: f64 = 0.0f64;
-        let mut reg_22: f64 = 0.0f64;
-        let mut reg_23: f64 = 0.0f64;
-        let mut reg_24: f64 = 0.0f64;
-        let mut reg_25: f64 = 0.0f64;
-        let mut reg_26: f64 = 0.0f64;
-        let mut reg_27: f64 = 0.0f64;
-        let mut reg_28: f64 = 0.0f64;
+        let mut reg_21: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_22: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_23: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_24: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_25: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_26: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_27: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_28: mmmfloat = 0.0 as mmmfloat;
         let mut reg_29: Word = 0u64;
         reg_21 = word_to_f64({ let state = self.get_current_statestorage(); state.get_state_word() });
         reg_22 = reg_21;
@@ -1056,7 +1076,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         reg_24 = self.host.sample_rate();
         reg_25 = reg_23 / reg_24;
         reg_26 = reg_22 + reg_25;
-        reg_27 = 1.0f64;
+        reg_27 = 1.0 as mmmfloat;
         reg_28 = reg_26 % reg_27;
         {
             let state = self.get_current_statestorage();
@@ -1084,13 +1104,13 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let arg_0_scalar = word_to_f64(arg_0_value);
         let arg_1 = [arg_1_value];
         let arg_1_scalar = word_to_f64(arg_1_value);
-        let mut reg_32: f64 = 0.0f64;
+        let mut reg_32: mmmfloat = 0.0 as mmmfloat;
         let mut reg_33: Word = 0u64;
-        let mut reg_34: f64 = 0.0f64;
-        let mut reg_35: f64 = 0.0f64;
-        let mut reg_36: f64 = 0.0f64;
-        let mut reg_37: f64 = 0.0f64;
-        let mut reg_38: f64 = 0.0f64;
+        let mut reg_34: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_35: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_36: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_37: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_38: mmmfloat = 0.0 as mmmfloat;
         let mut reg_39: Word = 0u64;
         reg_32 = arg_0_scalar;
         reg_33 = 6u64;
@@ -1098,7 +1118,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         reg_34 = word_to_f64(call_result);
         reg_35 = arg_1_scalar;
         reg_36 = reg_34 + reg_35;
-        reg_37 = 1.0f64;
+        reg_37 = 1.0 as mmmfloat;
         reg_38 = reg_36 % reg_37;
         return f64_to_word(reg_38);
     }
@@ -1111,9 +1131,9 @@ impl<H: MimiumHost> MimiumProgram<H> {
 
     #[inline(always)]
     fn __default_7_phase_shift(&mut self) -> Word {
-        let mut reg_30: f64 = 0.0f64;
+        let mut reg_30: mmmfloat = 0.0 as mmmfloat;
         let mut reg_31: Word = 0u64;
-        reg_30 = 0.0f64;
+        reg_30 = 0.0 as mmmfloat;
         return f64_to_word(reg_30);
     }
 
@@ -1135,23 +1155,23 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let arg_0_scalar = word_to_f64(arg_0_value);
         let arg_1 = [arg_1_value];
         let arg_1_scalar = word_to_f64(arg_1_value);
-        let mut reg_42: f64 = 0.0f64;
-        let mut reg_43: f64 = 0.0f64;
+        let mut reg_42: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_43: mmmfloat = 0.0 as mmmfloat;
         let mut reg_44: Word = 0u64;
-        let mut reg_45: f64 = 0.0f64;
-        let mut reg_46: f64 = 0.0f64;
-        let mut reg_47: f64 = 0.0f64;
-        let mut reg_48: f64 = 0.0f64;
-        let mut reg_49: f64 = 0.0f64;
+        let mut reg_45: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_46: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_47: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_48: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_49: mmmfloat = 0.0 as mmmfloat;
         let mut reg_50: Word = 0u64;
         reg_42 = arg_0_scalar;
         reg_43 = arg_1_scalar;
         reg_44 = 7u64;
         let call_result = self.osc_phasor(f64_to_word(reg_42), f64_to_word(reg_43));
         reg_45 = word_to_f64(call_result);
-        reg_46 = 2.0f64;
+        reg_46 = 2.0 as mmmfloat;
         reg_47 = reg_45 * reg_46;
-        reg_48 = 1.0f64;
+        reg_48 = 1.0 as mmmfloat;
         reg_49 = reg_47 - reg_48;
         return f64_to_word(reg_49);
     }
@@ -1164,9 +1184,9 @@ impl<H: MimiumHost> MimiumProgram<H> {
 
     #[inline(always)]
     fn __default_9_phase(&mut self) -> Word {
-        let mut reg_40: f64 = 0.0f64;
+        let mut reg_40: mmmfloat = 0.0 as mmmfloat;
         let mut reg_41: Word = 0u64;
-        reg_40 = 0.0f64;
+        reg_40 = 0.0 as mmmfloat;
         return f64_to_word(reg_40);
     }
 
@@ -1188,10 +1208,10 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let arg_0_scalar = word_to_f64(arg_0_value);
         let arg_1 = [arg_1_value];
         let arg_1_scalar = word_to_f64(arg_1_value);
-        let mut reg_53: f64 = 0.0f64;
-        let mut reg_54: f64 = 0.0f64;
+        let mut reg_53: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_54: mmmfloat = 0.0 as mmmfloat;
         let mut reg_55: Word = 0u64;
-        let mut reg_56: f64 = 0.0f64;
+        let mut reg_56: mmmfloat = 0.0 as mmmfloat;
         let mut reg_57: Word = 0u64;
         reg_53 = arg_0_scalar;
         reg_54 = arg_1_scalar;
@@ -1209,9 +1229,9 @@ impl<H: MimiumHost> MimiumProgram<H> {
 
     #[inline(always)]
     fn __default_11_phase(&mut self) -> Word {
-        let mut reg_51: f64 = 0.0f64;
+        let mut reg_51: mmmfloat = 0.0 as mmmfloat;
         let mut reg_52: Word = 0u64;
-        reg_51 = 0.0f64;
+        reg_51 = 0.0 as mmmfloat;
         return f64_to_word(reg_51);
     }
 
@@ -1233,44 +1253,44 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let arg_0_scalar = word_to_f64(arg_0_value);
         let arg_1 = [arg_1_value];
         let arg_1_scalar = word_to_f64(arg_1_value);
-        let mut reg_60: f64 = 0.0f64;
-        let mut reg_61: f64 = 0.0f64;
+        let mut reg_60: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_61: mmmfloat = 0.0 as mmmfloat;
         let mut reg_62: Word = 0u64;
-        let mut reg_63: f64 = 0.0f64;
+        let mut reg_63: mmmfloat = 0.0 as mmmfloat;
         let mut reg_64: Word = 0u64;
         let mut reg_65: Word = 0u64;
-        let mut reg_66: f64 = 0.0f64;
-        let mut reg_67: f64 = 0.0f64;
-        let mut reg_68: f64 = 0.0f64;
+        let mut reg_66: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_67: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_68: mmmfloat = 0.0 as mmmfloat;
         let mut reg_69: Word = 0u64;
-        let mut reg_70: f64 = 0.0f64;
-        let mut reg_71: f64 = 0.0f64;
-        let mut reg_72: f64 = 0.0f64;
-        let mut reg_73: f64 = 0.0f64;
-        let mut reg_74: f64 = 0.0f64;
-        let mut reg_75: f64 = 0.0f64;
-        let mut reg_76: f64 = 0.0f64;
-        let mut reg_77: f64 = 0.0f64;
-        let mut reg_78: f64 = 0.0f64;
-        let mut reg_79: f64 = 0.0f64;
+        let mut reg_70: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_71: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_72: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_73: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_74: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_75: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_76: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_77: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_78: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_79: mmmfloat = 0.0 as mmmfloat;
         let mut reg_80: Word = 0u64;
-        let mut reg_81: f64 = 0.0f64;
-        let mut reg_82: f64 = 0.0f64;
-        let mut reg_83: f64 = 0.0f64;
-        let mut reg_84: f64 = 0.0f64;
-        let mut reg_85: f64 = 0.0f64;
-        let mut reg_86: f64 = 0.0f64;
-        let mut reg_87: f64 = 0.0f64;
-        let mut reg_88: f64 = 0.0f64;
-        let mut reg_89: f64 = 0.0f64;
-        let mut reg_90: f64 = 0.0f64;
+        let mut reg_81: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_82: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_83: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_84: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_85: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_86: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_87: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_88: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_89: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_90: mmmfloat = 0.0 as mmmfloat;
         let mut reg_91: Word = 0u64;
         let mut reg_92: Word = 0u64;
-        let mut reg_93: f64 = 0.0f64;
-        let mut reg_94: f64 = 0.0f64;
-        let mut reg_95: f64 = 0.0f64;
-        let mut reg_96: f64 = 0.0f64;
-        let mut reg_97: f64 = 0.0f64;
+        let mut reg_93: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_94: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_95: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_96: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_97: mmmfloat = 0.0 as mmmfloat;
         let mut reg_98: Word = 0u64;
         let mut stack_alloc_64 = [0u64; 1];
         let mut stack_alloc_91 = [0u64; 1];
@@ -1286,7 +1306,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
                     reg_63 = word_to_f64(call_result);
                     stack_alloc_64[0usize] = f64_to_word(reg_63);
                     reg_66 = word_to_f64(stack_alloc_64[0usize]);
-                    reg_67 = 0.25f64;
+                    reg_67 = 0.25 as mmmfloat;
                     reg_68 = if reg_66 < reg_67 { 1.0 } else { 0.0 };
                     pred_bb = 0;
                     bb = if truthy(f64_to_word(reg_68)) { 1usize } else { 2usize };
@@ -1294,11 +1314,11 @@ impl<H: MimiumHost> MimiumProgram<H> {
                 },
                 1 => {
                     reg_70 = word_to_f64(stack_alloc_64[0usize]);
-                    reg_71 = 0.0f64;
-                    reg_72 = 1.0f64;
+                    reg_71 = 0.0 as mmmfloat;
+                    reg_72 = 1.0 as mmmfloat;
                     reg_73 = reg_71 - reg_72;
                     reg_74 = reg_70 * reg_73;
-                    reg_75 = 0.5f64;
+                    reg_75 = 0.5 as mmmfloat;
                     reg_76 = reg_74 + reg_75;
                     pred_bb = 1;
                     bb = 6usize;
@@ -1306,7 +1326,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
                 },
                 2 => {
                     reg_77 = word_to_f64(stack_alloc_64[0usize]);
-                    reg_78 = 0.75f64;
+                    reg_78 = 0.75 as mmmfloat;
                     reg_79 = if reg_77 > reg_78 { 1.0 } else { 0.0 };
                     pred_bb = 2;
                     bb = if truthy(f64_to_word(reg_79)) { 3usize } else { 4usize };
@@ -1317,11 +1337,11 @@ impl<H: MimiumHost> MimiumProgram<H> {
                 },
                 3 => {
                     reg_81 = word_to_f64(stack_alloc_64[0usize]);
-                    reg_82 = 0.0f64;
-                    reg_83 = 1.0f64;
+                    reg_82 = 0.0 as mmmfloat;
+                    reg_83 = 1.0 as mmmfloat;
                     reg_84 = reg_82 - reg_83;
                     reg_85 = reg_81 * reg_84;
-                    reg_86 = 1.5f64;
+                    reg_86 = 1.5 as mmmfloat;
                     reg_87 = reg_85 + reg_86;
                     pred_bb = 3;
                     bb = 5usize;
@@ -1355,9 +1375,9 @@ impl<H: MimiumHost> MimiumProgram<H> {
                     }
                     stack_alloc_91[0usize] = f64_to_word(reg_90);
                     reg_93 = word_to_f64(stack_alloc_91[0usize]);
-                    reg_94 = 0.5f64;
+                    reg_94 = 0.5 as mmmfloat;
                     reg_95 = reg_93 - reg_94;
-                    reg_96 = 4.0f64;
+                    reg_96 = 4.0 as mmmfloat;
                     reg_97 = reg_95 * reg_96;
                     return f64_to_word(reg_97);
                 },
@@ -1374,9 +1394,9 @@ impl<H: MimiumHost> MimiumProgram<H> {
 
     #[inline(always)]
     fn __default_13_phase(&mut self) -> Word {
-        let mut reg_58: f64 = 0.0f64;
+        let mut reg_58: mmmfloat = 0.0 as mmmfloat;
         let mut reg_59: Word = 0u64;
-        reg_58 = 0.0f64;
+        reg_58 = 0.0 as mmmfloat;
         return f64_to_word(reg_58);
     }
 
@@ -1398,23 +1418,23 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let arg_0_scalar = word_to_f64(arg_0_value);
         let arg_1 = [arg_1_value];
         let arg_1_scalar = word_to_f64(arg_1_value);
-        let mut reg_101: f64 = 0.0f64;
-        let mut reg_102: f64 = 0.0f64;
+        let mut reg_101: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_102: mmmfloat = 0.0 as mmmfloat;
         let mut reg_103: Word = 0u64;
-        let mut reg_104: f64 = 0.0f64;
-        let mut reg_105: f64 = 0.0f64;
-        let mut reg_106: f64 = 0.0f64;
-        let mut reg_107: f64 = 0.0f64;
-        let mut reg_108: f64 = 0.0f64;
+        let mut reg_104: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_105: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_106: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_107: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_108: mmmfloat = 0.0 as mmmfloat;
         let mut reg_109: Word = 0u64;
         reg_101 = arg_0_scalar;
         reg_102 = arg_1_scalar;
         reg_103 = 13u64;
         let call_result = self.osc_tri(f64_to_word(reg_101), f64_to_word(reg_102));
         reg_104 = word_to_f64(call_result);
-        reg_105 = 0.5f64;
+        reg_105 = 0.5 as mmmfloat;
         reg_106 = reg_104 * reg_105;
-        reg_107 = 0.5f64;
+        reg_107 = 0.5 as mmmfloat;
         reg_108 = reg_106 + reg_107;
         return f64_to_word(reg_108);
     }
@@ -1427,9 +1447,9 @@ impl<H: MimiumHost> MimiumProgram<H> {
 
     #[inline(always)]
     fn __default_15_phase(&mut self) -> Word {
-        let mut reg_99: f64 = 0.0f64;
+        let mut reg_99: mmmfloat = 0.0 as mmmfloat;
         let mut reg_100: Word = 0u64;
-        reg_99 = 0.0f64;
+        reg_99 = 0.0 as mmmfloat;
         return f64_to_word(reg_99);
     }
 
@@ -1456,18 +1476,18 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let arg_1_scalar = word_to_f64(arg_1_value);
         let arg_2 = [arg_2_value];
         let arg_2_scalar = word_to_f64(arg_2_value);
-        let mut reg_114: f64 = 0.0f64;
-        let mut reg_115: f64 = 0.0f64;
+        let mut reg_114: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_115: mmmfloat = 0.0 as mmmfloat;
         let mut reg_116: Word = 0u64;
-        let mut reg_117: f64 = 0.0f64;
-        let mut reg_118: f64 = 0.0f64;
-        let mut reg_119: f64 = 0.0f64;
+        let mut reg_117: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_118: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_119: mmmfloat = 0.0 as mmmfloat;
         let mut reg_120: Word = 0u64;
-        let mut reg_121: f64 = 0.0f64;
-        let mut reg_122: f64 = 0.0f64;
-        let mut reg_123: f64 = 0.0f64;
-        let mut reg_124: f64 = 0.0f64;
-        let mut reg_125: f64 = 0.0f64;
+        let mut reg_121: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_122: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_123: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_124: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_125: mmmfloat = 0.0 as mmmfloat;
         let mut reg_126: Word = 0u64;
         let mut bb: usize = 0;
         let mut pred_bb: usize = 0;
@@ -1486,14 +1506,14 @@ impl<H: MimiumHost> MimiumProgram<H> {
                     continue;
                 },
                 1 => {
-                    reg_121 = 1.0f64;
+                    reg_121 = 1.0 as mmmfloat;
                     pred_bb = 1;
                     bb = 3usize;
                     continue;
                 },
                 2 => {
-                    reg_122 = 0.0f64;
-                    reg_123 = 1.0f64;
+                    reg_122 = 0.0 as mmmfloat;
+                    reg_123 = 1.0 as mmmfloat;
                     reg_124 = reg_122 - reg_123;
                     pred_bb = 2;
                     bb = 3usize;
@@ -1522,9 +1542,9 @@ impl<H: MimiumHost> MimiumProgram<H> {
 
     #[inline(always)]
     fn __default_17_phase(&mut self) -> Word {
-        let mut reg_110: f64 = 0.0f64;
+        let mut reg_110: mmmfloat = 0.0 as mmmfloat;
         let mut reg_111: Word = 0u64;
-        reg_110 = 0.0f64;
+        reg_110 = 0.0 as mmmfloat;
         return f64_to_word(reg_110);
     }
 
@@ -1536,9 +1556,9 @@ impl<H: MimiumHost> MimiumProgram<H> {
 
     #[inline(always)]
     fn __default_17_duty(&mut self) -> Word {
-        let mut reg_112: f64 = 0.0f64;
+        let mut reg_112: mmmfloat = 0.0 as mmmfloat;
         let mut reg_113: Word = 0u64;
-        reg_112 = 0.5f64;
+        reg_112 = 0.5 as mmmfloat;
         return f64_to_word(reg_112);
     }
 
@@ -1565,16 +1585,16 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let arg_1_scalar = word_to_f64(arg_1_value);
         let arg_2 = [arg_2_value];
         let arg_2_scalar = word_to_f64(arg_2_value);
-        let mut reg_131: f64 = 0.0f64;
-        let mut reg_132: f64 = 0.0f64;
+        let mut reg_131: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_132: mmmfloat = 0.0 as mmmfloat;
         let mut reg_133: Word = 0u64;
-        let mut reg_134: f64 = 0.0f64;
-        let mut reg_135: f64 = 0.0f64;
-        let mut reg_136: f64 = 0.0f64;
+        let mut reg_134: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_135: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_136: mmmfloat = 0.0 as mmmfloat;
         let mut reg_137: Word = 0u64;
-        let mut reg_138: f64 = 0.0f64;
-        let mut reg_139: f64 = 0.0f64;
-        let mut reg_140: f64 = 0.0f64;
+        let mut reg_138: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_139: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_140: mmmfloat = 0.0 as mmmfloat;
         let mut reg_141: Word = 0u64;
         let mut bb: usize = 0;
         let mut pred_bb: usize = 0;
@@ -1593,13 +1613,13 @@ impl<H: MimiumHost> MimiumProgram<H> {
                     continue;
                 },
                 1 => {
-                    reg_138 = 1.0f64;
+                    reg_138 = 1.0 as mmmfloat;
                     pred_bb = 1;
                     bb = 3usize;
                     continue;
                 },
                 2 => {
-                    reg_139 = 0.0f64;
+                    reg_139 = 0.0 as mmmfloat;
                     pred_bb = 2;
                     bb = 3usize;
                     continue;
@@ -1627,9 +1647,9 @@ impl<H: MimiumHost> MimiumProgram<H> {
 
     #[inline(always)]
     fn __default_20_phase(&mut self) -> Word {
-        let mut reg_127: f64 = 0.0f64;
+        let mut reg_127: mmmfloat = 0.0 as mmmfloat;
         let mut reg_128: Word = 0u64;
-        reg_127 = 0.0f64;
+        reg_127 = 0.0 as mmmfloat;
         return f64_to_word(reg_127);
     }
 
@@ -1641,9 +1661,9 @@ impl<H: MimiumHost> MimiumProgram<H> {
 
     #[inline(always)]
     fn __default_20_duty(&mut self) -> Word {
-        let mut reg_129: f64 = 0.0f64;
+        let mut reg_129: mmmfloat = 0.0 as mmmfloat;
         let mut reg_130: Word = 0u64;
-        reg_129 = 0.5f64;
+        reg_129 = 0.5 as mmmfloat;
         return f64_to_word(reg_129);
     }
 
@@ -1665,23 +1685,23 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let arg_0_scalar = word_to_f64(arg_0_value);
         let arg_1 = [arg_1_value];
         let arg_1_scalar = word_to_f64(arg_1_value);
-        let mut reg_144: f64 = 0.0f64;
-        let mut reg_145: f64 = 0.0f64;
+        let mut reg_144: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_145: mmmfloat = 0.0 as mmmfloat;
         let mut reg_146: Word = 0u64;
-        let mut reg_147: f64 = 0.0f64;
-        let mut reg_148: f64 = 0.0f64;
-        let mut reg_149: f64 = 0.0f64;
+        let mut reg_147: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_148: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_149: mmmfloat = 0.0 as mmmfloat;
         let mut reg_150: Word = 0u64;
-        let mut reg_151: f64 = 0.0f64;
-        let mut reg_152: f64 = 0.0f64;
-        let mut reg_153: f64 = 0.0f64;
+        let mut reg_151: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_152: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_153: mmmfloat = 0.0 as mmmfloat;
         let mut reg_154: Word = 0u64;
         reg_144 = arg_0_scalar;
         reg_145 = arg_1_scalar;
         reg_146 = 7u64;
         let call_result = self.osc_phasor(f64_to_word(reg_144), f64_to_word(reg_145));
         reg_147 = word_to_f64(call_result);
-        reg_148 = 2.0f64;
+        reg_148 = 2.0 as mmmfloat;
         reg_149 = reg_147 * reg_148;
         reg_150 = 1u64;
         let call_result = self.math_PI();
@@ -1699,9 +1719,9 @@ impl<H: MimiumHost> MimiumProgram<H> {
 
     #[inline(always)]
     fn __default_23_phase(&mut self) -> Word {
-        let mut reg_142: f64 = 0.0f64;
+        let mut reg_142: mmmfloat = 0.0 as mmmfloat;
         let mut reg_143: Word = 0u64;
-        reg_142 = 0.0f64;
+        reg_142 = 0.0 as mmmfloat;
         return f64_to_word(reg_142);
     }
 
@@ -1723,23 +1743,23 @@ impl<H: MimiumHost> MimiumProgram<H> {
         let arg_0_scalar = word_to_f64(arg_0_value);
         let arg_1 = [arg_1_value];
         let arg_1_scalar = word_to_f64(arg_1_value);
-        let mut reg_157: f64 = 0.0f64;
-        let mut reg_158: f64 = 0.0f64;
+        let mut reg_157: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_158: mmmfloat = 0.0 as mmmfloat;
         let mut reg_159: Word = 0u64;
-        let mut reg_160: f64 = 0.0f64;
-        let mut reg_161: f64 = 0.0f64;
-        let mut reg_162: f64 = 0.0f64;
-        let mut reg_163: f64 = 0.0f64;
-        let mut reg_164: f64 = 0.0f64;
+        let mut reg_160: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_161: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_162: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_163: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_164: mmmfloat = 0.0 as mmmfloat;
         let mut reg_165: Word = 0u64;
         reg_157 = arg_0_scalar;
         reg_158 = arg_1_scalar;
         reg_159 = 23u64;
         let call_result = self.osc_sinwave(f64_to_word(reg_157), f64_to_word(reg_158));
         reg_160 = word_to_f64(call_result);
-        reg_161 = 0.5f64;
+        reg_161 = 0.5 as mmmfloat;
         reg_162 = reg_160 * reg_161;
-        reg_163 = 0.5f64;
+        reg_163 = 0.5 as mmmfloat;
         reg_164 = reg_162 + reg_163;
         return f64_to_word(reg_164);
     }
@@ -1752,9 +1772,9 @@ impl<H: MimiumHost> MimiumProgram<H> {
 
     #[inline(always)]
     fn __default_25_phase(&mut self) -> Word {
-        let mut reg_155: f64 = 0.0f64;
+        let mut reg_155: mmmfloat = 0.0 as mmmfloat;
         let mut reg_156: Word = 0u64;
-        reg_155 = 0.0f64;
+        reg_155 = 0.0 as mmmfloat;
         return f64_to_word(reg_155);
     }
 
@@ -1771,13 +1791,13 @@ impl<H: MimiumHost> MimiumProgram<H> {
     fn osc(&mut self, arg_0_value: Word) -> Word {
         let arg_0 = [arg_0_value];
         let arg_0_scalar = word_to_f64(arg_0_value);
-        let mut reg_166: f64 = 0.0f64;
-        let mut reg_167: f64 = 0.0f64;
+        let mut reg_166: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_167: mmmfloat = 0.0 as mmmfloat;
         let mut reg_168: Word = 0u64;
-        let mut reg_169: f64 = 0.0f64;
+        let mut reg_169: mmmfloat = 0.0 as mmmfloat;
         let mut reg_170: Word = 0u64;
         reg_166 = arg_0_scalar;
-        reg_167 = 0.0f64;
+        reg_167 = 0.0 as mmmfloat;
         reg_168 = 23u64;
         let call_result = self.osc_sinwave(f64_to_word(reg_166), f64_to_word(reg_167));
         reg_169 = word_to_f64(call_result);
@@ -1793,222 +1813,192 @@ impl<H: MimiumHost> MimiumProgram<H> {
 
     #[inline(always)]
     fn dsp(&mut self, ret_words: &mut [Word; 2]) -> () {
-        let mut reg_171: f64 = 0.0f64;
-        let mut reg_172: f64 = 0.0f64;
-        let mut reg_173: f64 = 0.0f64;
+        let mut reg_171: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_172: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_173: mmmfloat = 0.0 as mmmfloat;
         let mut reg_174: Word = 0u64;
-        let mut reg_175: f64 = 0.0f64;
-        let mut reg_176: f64 = 0.0f64;
-        let mut reg_177: f64 = 0.0f64;
-        let mut reg_178: f64 = 0.0f64;
-        let mut reg_179: f64 = 0.0f64;
-        let mut reg_180: f64 = 0.0f64;
+        let mut reg_175: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_176: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_177: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_178: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_179: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_180: mmmfloat = 0.0 as mmmfloat;
         let mut reg_181: Word = 0u64;
-        let mut reg_182: f64 = 0.0f64;
-        let mut reg_183: f64 = 0.0f64;
-        let mut reg_184: f64 = 0.0f64;
-        let mut reg_185: f64 = 0.0f64;
-        let mut reg_186: f64 = 0.0f64;
-        let mut reg_187: f64 = 0.0f64;
+        let mut reg_182: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_183: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_184: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_185: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_186: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_187: mmmfloat = 0.0 as mmmfloat;
         let mut reg_188: Word = 0u64;
-        let mut reg_189: f64 = 0.0f64;
-        let mut reg_190: f64 = 0.0f64;
-        let mut reg_191: f64 = 0.0f64;
-        let mut reg_192: f64 = 0.0f64;
-        let mut reg_193: f64 = 0.0f64;
-        let mut reg_194: f64 = 0.0f64;
+        let mut reg_189: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_190: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_191: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_192: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_193: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_194: mmmfloat = 0.0 as mmmfloat;
         let mut reg_195: Word = 0u64;
-        let mut reg_196: f64 = 0.0f64;
-        let mut reg_197: f64 = 0.0f64;
-        let mut reg_198: f64 = 0.0f64;
-        let mut reg_199: f64 = 0.0f64;
-        let mut reg_200: f64 = 0.0f64;
-        let mut reg_201: f64 = 0.0f64;
+        let mut reg_196: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_197: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_198: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_199: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_200: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_201: mmmfloat = 0.0 as mmmfloat;
         let mut reg_202: Word = 0u64;
-        let mut reg_203: f64 = 0.0f64;
-        let mut reg_204: f64 = 0.0f64;
-        let mut reg_205: f64 = 0.0f64;
-        let mut reg_206: f64 = 0.0f64;
-        let mut reg_207: f64 = 0.0f64;
-        let mut reg_208: f64 = 0.0f64;
+        let mut reg_203: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_204: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_205: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_206: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_207: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_208: mmmfloat = 0.0 as mmmfloat;
         let mut reg_209: Word = 0u64;
-        let mut reg_210: f64 = 0.0f64;
-        let mut reg_211: f64 = 0.0f64;
-        let mut reg_212: f64 = 0.0f64;
-        let mut reg_213: f64 = 0.0f64;
-        let mut reg_214: f64 = 0.0f64;
-        let mut reg_215: f64 = 0.0f64;
+        let mut reg_210: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_211: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_212: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_213: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_214: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_215: mmmfloat = 0.0 as mmmfloat;
         let mut reg_216: Word = 0u64;
-        let mut reg_217: f64 = 0.0f64;
-        let mut reg_218: f64 = 0.0f64;
-        let mut reg_219: f64 = 0.0f64;
-        let mut reg_220: f64 = 0.0f64;
-        let mut reg_221: f64 = 0.0f64;
-        let mut reg_222: f64 = 0.0f64;
+        let mut reg_217: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_218: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_219: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_220: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_221: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_222: mmmfloat = 0.0 as mmmfloat;
         let mut reg_223: Word = 0u64;
-        let mut reg_224: f64 = 0.0f64;
-        let mut reg_225: f64 = 0.0f64;
-        let mut reg_226: f64 = 0.0f64;
-        let mut reg_227: f64 = 0.0f64;
-        let mut reg_228: f64 = 0.0f64;
-        let mut reg_229: f64 = 0.0f64;
+        let mut reg_224: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_225: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_226: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_227: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_228: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_229: mmmfloat = 0.0 as mmmfloat;
         let mut reg_230: Word = 0u64;
-        let mut reg_231: f64 = 0.0f64;
-        let mut reg_232: f64 = 0.0f64;
-        let mut reg_233: f64 = 0.0f64;
-        let mut reg_234: f64 = 0.0f64;
-        let mut reg_235: f64 = 0.0f64;
-        let mut reg_236: f64 = 0.0f64;
+        let mut reg_231: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_232: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_233: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_234: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_235: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_236: mmmfloat = 0.0 as mmmfloat;
         let mut reg_237: Word = 0u64;
-        let mut reg_238: f64 = 0.0f64;
-        let mut reg_239: f64 = 0.0f64;
-        let mut reg_240: f64 = 0.0f64;
-        let mut reg_241: f64 = 0.0f64;
+        let mut reg_238: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_239: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_240: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_241: mmmfloat = 0.0 as mmmfloat;
         let mut reg_242: Word = 0u64;
-        let mut reg_243: f64 = 0.0f64;
-        let mut reg_244: f64 = 0.0f64;
-        let mut reg_245: f64 = 0.0f64;
-        let mut reg_246: f64 = 0.0f64;
-        let mut reg_247: f64 = 0.0f64;
-        let mut reg_248: f64 = 0.0f64;
-        let mut reg_249: f64 = 0.0f64;
-        let mut reg_250: f64 = 0.0f64;
-        let mut reg_251: f64 = 0.0f64;
-        let mut reg_252: f64 = 0.0f64;
-        let mut reg_253: f64 = 0.0f64;
+        let mut reg_243: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_244: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_245: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_246: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_247: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_248: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_249: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_250: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_251: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_252: mmmfloat = 0.0 as mmmfloat;
+        let mut reg_253: mmmfloat = 0.0 as mmmfloat;
         let mut reg_254: Word = 0u64;
         let mut reg_255: Word = 0u64;
         let mut reg_256: Word = 0u64;
-        let mut reg_257: f64 = 0.0f64;
+        let mut reg_257: mmmfloat = 0.0 as mmmfloat;
         let mut reg_258: Word = 0u64;
         let mut reg_259: Word = 0u64;
-        let mut reg_260: f64 = 0.0f64;
+        let mut reg_260: mmmfloat = 0.0 as mmmfloat;
         let mut reg_261: Word = 0u64;
         let mut reg_262: Word = 0u64;
         let mut reg_263: Word = 0u64;
         let mut stack_alloc_254 = [0u64; 1];
         let mut stack_alloc_256 = [0u64; 2];
-        reg_171 = 50.0f64;
-        reg_172 = 10.0f64;
+        reg_171 = 50.0 as mmmfloat;
+        reg_172 = 10.0 as mmmfloat;
         reg_173 = reg_171 * reg_172;
         reg_174 = 27u64;
         let call_result = self.osc(f64_to_word(reg_173));
         reg_175 = word_to_f64(call_result);
-        reg_176 = 10.0f64;
+        reg_176 = 10.0 as mmmfloat;
         reg_177 = reg_175 / reg_176;
-        reg_178 = 50.0f64;
-        reg_179 = 9.0f64;
+        reg_178 = 50.0 as mmmfloat;
+        reg_179 = 9.0 as mmmfloat;
         reg_180 = reg_178 * reg_179;
-        {
-            let state = self.get_current_statestorage();
-            state.push_pos(1usize);
-        }
+        self.get_current_statestorage().push_pos(1usize);
         reg_181 = 27u64;
         let call_result = self.osc(f64_to_word(reg_180));
         reg_182 = word_to_f64(call_result);
-        reg_183 = 9.0f64;
+        reg_183 = 9.0 as mmmfloat;
         reg_184 = reg_182 / reg_183;
-        reg_185 = 50.0f64;
-        reg_186 = 8.0f64;
+        reg_185 = 50.0 as mmmfloat;
+        reg_186 = 8.0 as mmmfloat;
         reg_187 = reg_185 * reg_186;
-        {
-            let state = self.get_current_statestorage();
-            state.push_pos(1usize);
-        }
+        self.get_current_statestorage().push_pos(1usize);
         reg_188 = 27u64;
         let call_result = self.osc(f64_to_word(reg_187));
         reg_189 = word_to_f64(call_result);
-        reg_190 = 8.0f64;
+        reg_190 = 8.0 as mmmfloat;
         reg_191 = reg_189 / reg_190;
-        reg_192 = 50.0f64;
-        reg_193 = 7.0f64;
+        reg_192 = 50.0 as mmmfloat;
+        reg_193 = 7.0 as mmmfloat;
         reg_194 = reg_192 * reg_193;
-        {
-            let state = self.get_current_statestorage();
-            state.push_pos(1usize);
-        }
+        self.get_current_statestorage().push_pos(1usize);
         reg_195 = 27u64;
         let call_result = self.osc(f64_to_word(reg_194));
         reg_196 = word_to_f64(call_result);
-        reg_197 = 7.0f64;
+        reg_197 = 7.0 as mmmfloat;
         reg_198 = reg_196 / reg_197;
-        reg_199 = 50.0f64;
-        reg_200 = 6.0f64;
+        reg_199 = 50.0 as mmmfloat;
+        reg_200 = 6.0 as mmmfloat;
         reg_201 = reg_199 * reg_200;
-        {
-            let state = self.get_current_statestorage();
-            state.push_pos(1usize);
-        }
+        self.get_current_statestorage().push_pos(1usize);
         reg_202 = 27u64;
         let call_result = self.osc(f64_to_word(reg_201));
         reg_203 = word_to_f64(call_result);
-        reg_204 = 6.0f64;
+        reg_204 = 6.0 as mmmfloat;
         reg_205 = reg_203 / reg_204;
-        reg_206 = 50.0f64;
-        reg_207 = 5.0f64;
+        reg_206 = 50.0 as mmmfloat;
+        reg_207 = 5.0 as mmmfloat;
         reg_208 = reg_206 * reg_207;
-        {
-            let state = self.get_current_statestorage();
-            state.push_pos(1usize);
-        }
+        self.get_current_statestorage().push_pos(1usize);
         reg_209 = 27u64;
         let call_result = self.osc(f64_to_word(reg_208));
         reg_210 = word_to_f64(call_result);
-        reg_211 = 5.0f64;
+        reg_211 = 5.0 as mmmfloat;
         reg_212 = reg_210 / reg_211;
-        reg_213 = 50.0f64;
-        reg_214 = 4.0f64;
+        reg_213 = 50.0 as mmmfloat;
+        reg_214 = 4.0 as mmmfloat;
         reg_215 = reg_213 * reg_214;
-        {
-            let state = self.get_current_statestorage();
-            state.push_pos(1usize);
-        }
+        self.get_current_statestorage().push_pos(1usize);
         reg_216 = 27u64;
         let call_result = self.osc(f64_to_word(reg_215));
         reg_217 = word_to_f64(call_result);
-        reg_218 = 4.0f64;
+        reg_218 = 4.0 as mmmfloat;
         reg_219 = reg_217 / reg_218;
-        reg_220 = 50.0f64;
-        reg_221 = 3.0f64;
+        reg_220 = 50.0 as mmmfloat;
+        reg_221 = 3.0 as mmmfloat;
         reg_222 = reg_220 * reg_221;
-        {
-            let state = self.get_current_statestorage();
-            state.push_pos(1usize);
-        }
+        self.get_current_statestorage().push_pos(1usize);
         reg_223 = 27u64;
         let call_result = self.osc(f64_to_word(reg_222));
         reg_224 = word_to_f64(call_result);
-        reg_225 = 3.0f64;
+        reg_225 = 3.0 as mmmfloat;
         reg_226 = reg_224 / reg_225;
-        reg_227 = 50.0f64;
-        reg_228 = 2.0f64;
+        reg_227 = 50.0 as mmmfloat;
+        reg_228 = 2.0 as mmmfloat;
         reg_229 = reg_227 * reg_228;
-        {
-            let state = self.get_current_statestorage();
-            state.push_pos(1usize);
-        }
+        self.get_current_statestorage().push_pos(1usize);
         reg_230 = 27u64;
         let call_result = self.osc(f64_to_word(reg_229));
         reg_231 = word_to_f64(call_result);
-        reg_232 = 2.0f64;
+        reg_232 = 2.0 as mmmfloat;
         reg_233 = reg_231 / reg_232;
-        reg_234 = 50.0f64;
-        reg_235 = 1.0f64;
+        reg_234 = 50.0 as mmmfloat;
+        reg_235 = 1.0 as mmmfloat;
         reg_236 = reg_234 * reg_235;
-        {
-            let state = self.get_current_statestorage();
-            state.push_pos(1usize);
-        }
+        self.get_current_statestorage().push_pos(1usize);
         reg_237 = 27u64;
         let call_result = self.osc(f64_to_word(reg_236));
         reg_238 = word_to_f64(call_result);
-        reg_239 = 1.0f64;
+        reg_239 = 1.0 as mmmfloat;
         reg_240 = reg_238 / reg_239;
-        reg_241 = 50.0f64;
-        {
-            let state = self.get_current_statestorage();
-            state.push_pos(1usize);
-        }
+        reg_241 = 50.0 as mmmfloat;
+        self.get_current_statestorage().push_pos(1usize);
         reg_242 = 27u64;
         let call_result = self.osc(f64_to_word(reg_241));
         reg_243 = word_to_f64(call_result);
@@ -2027,10 +2017,7 @@ impl<H: MimiumHost> MimiumProgram<H> {
         stack_alloc_256[0usize] = f64_to_word(reg_257);
         reg_260 = word_to_f64(stack_alloc_254[0usize]);
         stack_alloc_256[1usize] = f64_to_word(reg_260);
-        {
-            let state = self.get_current_statestorage();
-            state.pop_pos(10usize);
-        }
+        self.get_current_statestorage().pop_pos(10usize);
         ret_words.copy_from_slice(&stack_alloc_256[0usize..2usize]);
         return ();
     }

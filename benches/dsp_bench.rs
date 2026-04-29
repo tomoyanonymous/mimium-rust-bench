@@ -35,15 +35,15 @@ fn faust_10_sine_oscillators(b: &mut Bencher) {
 #[bench]
 fn mimium_10_sine_oscillators(b: &mut Bencher) {
     let mut program = MimiumProgram::new();
-    let input: [f64; 0] = [];
-    let mut output = vec![0.0f64; FRAMES_PER_ITER * 2];
+    let input: [f32; 0] = [];
+    let mut output = vec![0.0f32; FRAMES_PER_ITER * 2];
     b.bytes = (FRAMES_PER_ITER * 2 * std::mem::size_of::<u64>()) as u64;
 
     b.iter(|| {
         program
             .call_dsp_buffer(&input, &mut output, FRAMES_PER_ITER)
             .unwrap();
-        let checksum = checksum_words(output.chunks_exact(2).map(|frame| frame[0].to_bits()));
+        let checksum = checksum_words(output.chunks_exact(2).map(|frame| frame[0].to_bits() as u64));
         black_box(checksum)
     });
 }
