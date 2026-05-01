@@ -5,6 +5,8 @@ extern crate test;
 use osc_portaudiorust::replicate_faust::mydsp;
 use osc_portaudiorust::replicate_libpd::LibpdDsp;
 use osc_portaudiorust::replicate_mimium::MimiumProgram;
+use osc_portaudiorust::replicate_mimium_vm::MimiumVmDsp;
+use osc_portaudiorust::replicate_mimium_wasm::MimiumWasmDsp;
 use std::hint::black_box;
 use test::Bencher;
 
@@ -44,6 +46,32 @@ fn mimium_10_sine_oscillators(b: &mut Bencher) {
             .call_dsp_buffer(&input, &mut output, FRAMES_PER_ITER)
             .unwrap();
         let checksum = checksum_words(output.chunks_exact(2).map(|frame| frame[0].to_bits() as u64));
+        black_box(checksum)
+    });
+}
+
+#[bench]
+fn mimium_vm_10_sine_oscillators(b: &mut Bencher) {
+    let mut dsp = MimiumVmDsp::new(SAMPLE_RATE as u32);
+    let mut output = vec![0.0f64; FRAMES_PER_ITER * 2];
+    b.bytes = (FRAMES_PER_ITER * 2 * std::mem::size_of::<f64>()) as u64;
+
+    b.iter(|| {
+        dsp.process_buffer(&mut output);
+        let checksum = checksum_words(output.chunks_exact(2).map(|frame| frame[0].to_bits()));
+        black_box(checksum)
+    });
+}
+
+#[bench]
+fn mimium_wasm_10_sine_oscillators(b: &mut Bencher) {
+    let mut dsp = MimiumWasmDsp::new(SAMPLE_RATE as f64);
+    let mut output = vec![0.0f64; FRAMES_PER_ITER * 2];
+    b.bytes = (FRAMES_PER_ITER * 2 * std::mem::size_of::<f64>()) as u64;
+
+    b.iter(|| {
+        dsp.process_buffer(&mut output);
+        let checksum = checksum_words(output.chunks_exact(2).map(|frame| frame[0].to_bits()));
         black_box(checksum)
     });
 }

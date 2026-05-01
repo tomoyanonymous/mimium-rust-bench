@@ -104,3 +104,14 @@ test faust_10_sine_oscillators  ... bench:      18,914.39 ns/iter (+/- 1,293.59)
 test libpd_10_sine_oscillators  ... bench:      16,599.20 ns/iter (+/- 261.47) = 246 MB/s
 test mimium_10_sine_oscillators ... bench:      33,201.89 ns/iter (+/- 1,018.78) = 493 MB/s
 ```
+
+## WASM and VM comparison
+
+
+```log
+test faust_10_sine_oscillators       ... bench:      18,664.87 ns/iter (+/- 767.32) = 219 MB/s
+test libpd_10_sine_oscillators       ... bench:      16,498.87 ns/iter (+/- 847.72) = 248 MB/s
+test mimium_10_sine_oscillators      ... bench:      33,205.56 ns/iter (+/- 742.15) = 493 MB/s
+test mimium_vm_10_sine_oscillators   ... bench:   3,485,281.25 ns/iter (+/- 165,024.97) = 4 MB/s
+test mimium_wasm_10_sine_oscillators ... bench:     268,047.90 ns/iter (+/- 9,754.78) = 61 MB/s
+```

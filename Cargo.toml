@@ -1,5 +1,5 @@
 [package]
-name = "osc-portaudiorust"
+name = "mimium-transpiler-bench"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 libm = "*"
 libpd-sys = "0.3"
+mimium-lang = {git = "https://github.com/mimium-org/mimium-rs.git", branch = "perf/wasmjit"}
 
 [dependencies.default-boxed]
 version = "0.2.0"
