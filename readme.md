@@ -115,3 +115,34 @@ test mimium_10_sine_oscillators      ... bench:      33,205.56 ns/iter (+/- 742.
 test mimium_vm_10_sine_oscillators   ... bench:   3,485,281.25 ns/iter (+/- 165,024.97) = 4 MB/s
 test mimium_wasm_10_sine_oscillators ... bench:     268,047.90 ns/iter (+/- 9,754.78) = 61 MB/s
 ```
+
+## added 100 oscillators test
+
+
+```log
+test faust_10_sine_oscillators        ... bench:      18,577.62 ns/
+
+test libpd_10_sine_oscillators        ... bench:      16,526.52 ns/iter (+/- 302.41) = 247 MB/s
+test libpd_100_sine_oscillators       ... bench:     147,193.75 ns/iter (+/- 4,512.37) = 27 MB/s
+test mimium_10_sine_oscillators       ... bench:      34,264.17 ns/iter (+/- 8,519.22) = 478 MB/s
+test mimium_100_sine_oscillators      ... bench:     616,333.33 ns/iter (+/- 114,059.37) = 26 MB/s
+test mimium_vm_10_sine_oscillators    ... bench:   3,461,812.60 ns/iter (+/- 188,219.88) = 4 MB/s
+test mimium_vm_100_sine_oscillators   ... bench:  32,127,912.50 ns/iter (+/- 1,251,564.16)
+test mimium_wasm_10_sine_oscillators  ... bench:     264,795.83 ns/iter (+/- 7,540.82) = 61 MB/s
+test mimium_wasm_100_sine_oscillators ... bench:   2,860,091.65 ns/iter (+/- 43,217.73) = 5 MB/s
+```
+
+## changed mimium(VM/WASM) source code to noclosure
+
+```log
+test faust_10_sine_oscillators        ... bench:      19,318.94 ns/iter (+/- 3,101.75) = 212 MB/s
+test faust_100_sine_oscillators       ... bench:     323,900.00 ns/iter (+/- 45,584.95) = 12 MB/s
+test libpd_10_sine_oscillators        ... bench:      16,692.89 ns/iter (+/- 656.94) = 245 MB/s
+test libpd_100_sine_oscillators       ... bench:     148,129.16 ns/iter (+/- 4,230.11) = 27 MB/s
+test mimium_10_sine_oscillators       ... bench:      33,744.17 ns/iter (+/- 3,743.24) = 485 MB/s
+test mimium_100_sine_oscillators      ... bench:     740,400.53 ns/iter (+/- 142,862.14) = 22 MB/s
+test mimium_vm_10_sine_oscillators    ... bench:   3,543,375.05 ns/iter (+/- 307,578.33) = 4 MB/s
+test mimium_vm_100_sine_oscillators   ... bench:  27,642,933.20 ns/iter (+/- 1,224,829.10)
+test mimium_wasm_10_sine_oscillators  ... bench:     265,970.13 ns/iter (+/- 3,326.65) = 61 MB/s
+test mimium_wasm_100_sine_oscillators ... bench:   1,981,798.98 ns/iter (+/- 40,821.55) = 8 MB/s
+```

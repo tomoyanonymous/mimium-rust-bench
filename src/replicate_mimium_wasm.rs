@@ -13,13 +13,13 @@ pub struct MimiumWasmDsp {
 }
 
 impl MimiumWasmDsp {
-    pub fn new(sample_rate: f64) -> Self {
+    pub fn new(sample_rate: f64,src: &str) -> Self {
         let mut ctx = ExecContext::new(std::iter::empty(), None, Config::default());
         ctx.prepare_compiler();
         let wasm_output = ctx
             .get_compiler()
             .unwrap()
-            .emit_wasm(SRC)
+            .emit_wasm(src)
             .expect("mimium Wasm compile error");
 
         let n_channels = wasm_output.io_channels.map_or(2, |io| io.output as usize);

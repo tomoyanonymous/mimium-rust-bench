@@ -14,7 +14,7 @@ pub struct LibpdDsp {
 unsafe impl Send for LibpdDsp {}
 
 impl LibpdDsp {
-    pub fn new(sample_rate: i32) -> Self {
+    pub fn new(sample_rate: i32, src: &str) -> Self {
         LIBPD_INIT.get_or_init(|| unsafe {
             libpd_sys::libpd_init();
             libpd_sys::libpd_init_audio(0, 1, sample_rate);
@@ -29,7 +29,7 @@ impl LibpdDsp {
 
         let dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src");
         let dir_cstr = CString::new(dir.to_str().unwrap()).unwrap();
-        let file_cstr = CString::new("replicate.pd").unwrap();
+        let file_cstr = CString::new(src).unwrap();
 
         let patch = unsafe {
             libpd_sys::libpd_openfile(file_cstr.as_ptr(), dir_cstr.as_ptr())
@@ -48,6 +48,14 @@ impl LibpdDsp {
         let dummy_in = [0.0f32];
         unsafe {
             libpd_sys::libpd_process_float(ticks, dummy_in.as_ptr(), output.as_mut_ptr());
+        }
+    }
+}
+
+impl Drop for LibpdDsp {
+    fn drop(&mut self) {
+        unsafe {
+            libpd_sys::libpd_closefile(self._patch);
         }
     }
 }

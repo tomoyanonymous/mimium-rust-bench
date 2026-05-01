@@ -19,7 +19,7 @@ fn replicate (n,gen:`(float)->float,base_rate)->`float{
 #stage(main)
 
 fn dsp(){
-    let r =  replicate!(10, `osc,50)
+    let r =  replicate!(100, `osc,50)
     (r,r)
     
 }

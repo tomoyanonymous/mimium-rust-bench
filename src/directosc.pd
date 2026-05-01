@@ -5,8 +5,10 @@
 #X obj 101 160 expr~ sin(\$1);
 #X obj 101 120 *~;
 #X msg 198 73 6.28319;
+#X obj 110 15 inlet;
 #X connect 0 0 1 0;
 #X connect 1 0 4 0;
 #X connect 3 0 2 0;
 #X connect 4 0 3 0;
 #X connect 5 0 4 1;
+#X connect 6 0 1 0;

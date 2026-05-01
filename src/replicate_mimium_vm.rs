@@ -53,7 +53,7 @@ pub struct MimiumVmDsp {
 }
 
 impl MimiumVmDsp {
-    pub fn new(sample_rate: u32) -> Self {
+    pub fn new(sample_rate: u32,src: &str) -> Self {
         let sr = Arc::new(AtomicU32::new(sample_rate));
         let plugin = make_runtime_plugin(sr);
 
@@ -62,7 +62,7 @@ impl MimiumVmDsp {
             None,
             Config::default(),
         );
-        ctx.prepare_machine(SRC).expect("mimium VM compile error");
+        ctx.prepare_machine(src).expect("mimium VM compile error");
         ctx.run_main();
 
         let vm = ctx.take_vm().expect("VM not initialized");
